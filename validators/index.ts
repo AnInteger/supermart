@@ -73,7 +73,7 @@ export const toolsConfigSchema = z.object({
     z.object({
       name: z.string(),
       description: z.string().optional(),
-      config: z.record(z.unknown()).optional(),
+      config: z.record(z.string(), z.unknown()).optional(),
     })
   ),
   apis: z
@@ -82,7 +82,7 @@ export const toolsConfigSchema = z.object({
         name: z.string(),
         endpoint: z.string().url(),
         method: z.enum(['GET', 'POST', 'PUT', 'DELETE']),
-        headers: z.record(z.string()).optional(),
+        headers: z.record(z.string(), z.string()).optional(),
       })
     )
     .optional(),
@@ -194,7 +194,7 @@ export const getSearchSuggestionsSchema = z.object({
 /** 获取上传URL验证 */
 export const getUploadUrlSchema = z.object({
   filename: z.string().max(255),
-  type: z.string().refine((val) => ALLOWED_FILE_TYPES.includes(val), {
+  type: z.string().refine((val) => ALLOWED_FILE_TYPES.includes(val as any), {
     message: '不支持的文件类型',
   }),
   size: z.number().int().max(MAX_FILE_SIZE, '文件最大10MB'),
