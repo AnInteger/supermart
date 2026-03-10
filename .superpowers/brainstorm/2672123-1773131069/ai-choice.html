@@ -1,0 +1,82 @@
+<h2>MVP 阶段 AI 功能</h2>
+<p class="subtitle">是否在 MVP 阶段集成 AI 模型</p>
+
+<div class="mockup">
+  <div class="mockup-header">AI 功能 vs MVP 范围</div>
+  <div class="mockup-body" style="padding: 20px;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+
+      <!-- MVP 核心功能 -->
+      <div style="background: #e8f5e9; padding: 16px; border-radius: 8px;">
+        <div style="font-weight: bold; margin-bottom: 12px; color: #2e7d32;">✓ MVP 核心功能（必须）</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <span style="background: #c8e6c9; padding: 6px 12px; border-radius: 4px; font-size: 13px;">用户注册登录</span>
+          <span style="background: #c8e6c9; padding: 6px 12px; border-radius: 4px; font-size: 13px;">Skill 浏览搜索</span>
+          <span style="background: #c8e6c9; padding: 6px 12px; border-radius: 4px; font-size: 13px;">内容详情页</span>
+          <span style="background: #c8e6c9; padding: 6px 12px; border-radius: 4px; font-size: 13px;">评论评分</span>
+          <span style="background: #c8e6c9; padding: 6px 12px; border-radius: 4px; font-size: 13px;">基础创建</span>
+        </div>
+      </div>
+
+      <!-- AI 功能 -->
+      <div style="background: #fff3e0; padding: 16px; border-radius: 8px;">
+        <div style="font-weight: bold; margin-bottom: 12px; color: #ef6c00;">? AI 功能（待确认）</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <span style="background: #ffe0b2; padding: 6px 12px; border-radius: 4px; font-size: 13px;">AI 辅助内容生成</span>
+          <span style="background: #ffe0b2; padding: 6px 12px; border-radius: 4px; font-size: 13px;">语义搜索</span>
+          <span style="background: #ffe0b2; padding: 6px 12px; border-radius: 4px; font-size: 13px;">智能推荐</span>
+        </div>
+        <p style="margin: 12px 0 0 0; font-size: 13px; color: #666;">
+          这些功能需要对接国产大模型（通义千问、智谱GLM等），增加开发复杂度
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>问题5：MVP 阶段是否需要 AI 功能？</h3>
+
+  <div class="options">
+    <div class="option" data-choice="no-ai" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>MVP 不含 AI (推荐)</h3>
+        <p>专注核心 UGC 功能，快速验证产品价值，AI 功能留到后期迭代</p>
+      </div>
+    </div>
+    <div class="option" data-choice="user-api" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>用户自带 API Key</h3>
+        <p>平台不提供 AI，用户配置自己的 API Key 使用 AI 功能</p>
+      </div>
+    </div>
+    <div class="option" data-choice="full-ai" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>完整 AI 集成</h3>
+        <p>平台对接国产大模型，提供开箱即用的 AI 体验（需 API 费用）</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h4>工作量对比</h4>
+  <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 150px; background: #f5f5f5; padding: 12px; border-radius: 8px; text-align: center;">
+      <div style="font-size: 24px; font-weight: bold; color: #4caf50;">4-6周</div>
+      <div style="font-size: 13px; color: #666;">不含 AI</div>
+    </div>
+    <div style="flex: 1; min-width: 150px; background: #f5f5f5; padding: 12px; border-radius: 8px; text-align: center;">
+      <div style="font-size: 24px; font-weight: bold; color: #ff9800;">6-8周</div>
+      <div style="font-size: 13px; color: #666;">用户自带 Key</div>
+    </div>
+    <div style="flex: 1; min-width: 150px; background: #f5f5f5; padding: 12px; border-radius: 8px; text-align: center;">
+      <div style="font-size: 24px; font-weight: bold; color: #f44336;">8-10周</div>
+      <div style="font-size: 13px; color: #666;">完整 AI 集成</div>
+    </div>
+  </div>
+</div>

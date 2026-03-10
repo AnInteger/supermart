@@ -1,0 +1,108 @@
+<h2>数据库方案确认</h2>
+<p class="subtitle">混合架构下的数据存储策略</p>
+
+<div class="mockup">
+  <div class="mockup-header">混合架构数据流</div>
+  <div class="mockup-body" style="padding: 20px;">
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+
+      <div style="display: flex; gap: 16px; align-items: stretch;">
+        <!-- Next.js -->
+        <div style="flex: 1; background: #fff3e0; padding: 16px; border-radius: 8px;">
+          <div style="text-align: center; margin-bottom: 8px;"><strong>Next.js</strong></div>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
+            <li>用户认证</li>
+            <li>Skill/Agent CRUD</li>
+            <li>评论评分</li>
+            <li>搜索筛选</li>
+          </ul>
+        </div>
+
+        <!-- Python AI -->
+        <div style="flex: 1; background: #e8f5e9; padding: 16px; border-radius: 8px;">
+          <div style="text-align: center; margin-bottom: 8px;"><strong>Python (FastAPI)</strong></div>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
+            <li>AI 模型调用</li>
+            <li>内容生成辅助</li>
+            <li>语义搜索（后期）</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="text-align: center; color: #999;">↓</div>
+
+      <div style="background: #f5f5f5; padding: 16px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 8px;"><strong>数据层</strong></div>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <span style="background: #e0e0e0; padding: 6px 12px; border-radius: 4px;">PostgreSQL</span>
+          <span style="background: #e0e0e0; padding: 6px 12px; border-radius: 4px;">Redis</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>问题2：数据库部署方式</h3>
+
+  <div class="options">
+    <div class="option" data-choice="supabase" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Supabase (推荐)</h3>
+        <p>PostgreSQL + 认证 + 存储，免费额度充足，与 Next.js 集成极佳</p>
+      </div>
+    </div>
+    <div class="option" data-choice="firebase" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Firebase</h3>
+        <p>NoSQL (Firestore)，Google 生态，实时数据同步，国内访问可能较慢</p>
+      </div>
+    </div>
+    <div class="option" data-choice="self-hosted" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>自托管 PostgreSQL</h3>
+        <p>完全控制，需要自己管理服务器和备份</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h4>各方案对比</h4>
+  <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+    <tr style="background: #f5f5f5;">
+      <th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">特性</th>
+      <th style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Supabase</th>
+      <th style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Firebase</th>
+      <th style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">自托管</th>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">免费额度</td>
+      <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">500MB DB + 1GB 文件</td>
+      <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">1GB Firestore</td>
+      <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">无</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">国内访问</td>
+      <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">一般</td>
+      <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">较慢</td>
+      <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">最快</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">全文搜索</td>
+      <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">内置</td>
+      <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">需额外服务</td>
+      <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">需配置</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px;">运维成本</td>
+      <td style="padding: 8px; text-align: center;">低</td>
+      <td style="padding: 8px; text-align: center;">低</td>
+      <td style="padding: 8px; text-align: center;">高</td>
+    </tr>
+  </table>
+</div>

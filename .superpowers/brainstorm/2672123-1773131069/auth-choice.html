@@ -1,0 +1,98 @@
+<h2>用户认证方式</h2>
+<p class="subtitle">MVP 阶段的用户注册登录策略</p>
+
+<div class="mockup">
+  <div class="mockup-header">用户认证流程</div>
+  <div class="mockup-body" style="padding: 20px;">
+    <div style="display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;">
+
+      <!-- 邮箱注册流程 -->
+      <div style="flex: 1; min-width: 200px; background: #e3f2fd; padding: 16px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 12px;"><strong>邮箱注册</strong></div>
+        <div style="font-size: 13px;">
+          <div style="padding: 8px; background: #fff; border-radius: 4px; margin-bottom: 8px;">
+            1. 输入邮箱 + 密码
+          </div>
+          <div style="padding: 8px; background: #fff; border-radius: 4px; margin-bottom: 8px;">
+            2. 收取验证邮件
+          </div>
+          <div style="padding: 8px; background: #fff; border-radius: 4px;">
+            3. 点击链接激活
+          </div>
+        </div>
+        <div style="margin-top: 12px; padding: 8px; background: #bbdefb; border-radius: 4px; font-size: 12px; text-align: center;">
+          ✅ 成本低
+        </div>
+      </div>
+
+      <!-- 手机号注册流程 -->
+      <div style="flex: 1; min-width: 200px; background: #fff3e0; padding: 16px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 12px;"><strong>手机号注册</strong></div>
+        <div style="font-size: 13px;">
+          <div style="padding: 8px; background: #fff; border-radius: 4px; margin-bottom: 8px;">
+            1. 输入手机号
+          </div>
+          <div style="padding: 8px; background: #fff; border-radius: 4px; margin-bottom: 8px;">
+            2. 接收短信验证码
+          </div>
+          <div style="padding: 8px; background: #fff; border-radius: 4px;">
+            3. 设置密码完成
+          </div>
+        </div>
+        <div style="margin-top: 12px; padding: 8px; background: #ffe0b2; border-radius: 4px; font-size: 12px; text-align: center;">
+          ⚠️ 需短信服务费用
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>问题3：MVP 阶段的认证方式</h3>
+
+  <div class="options">
+    <div class="option" data-choice="email" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>仅邮箱注册 (推荐)</h3>
+        <p>成本低，实现简单，Supabase 原生支持，适合 MVP 快速验证</p>
+      </div>
+    </div>
+    <div class="option" data-choice="phone" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>仅手机号注册</h3>
+        <p>更符合国内用户习惯，但需要短信服务商（阿里云/腾讯云短信）</p>
+      </div>
+    </div>
+    <div class="option" data-choice="both" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>邮箱 + 手机号</h3>
+        <p>用户可选，灵活性高，但开发和维护成本更高</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h4>考虑因素</h4>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>邮箱方案优势</h4>
+      <ul>
+        <li>Supabase 原生支持，零额外成本</li>
+        <li>实现快速，专注核心功能</li>
+        <li>MVP 阶段验证产品价值</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>邮箱方案考虑</h4>
+      <ul>
+        <li>国内用户习惯手机号</li>
+        <li>后期可增加手机号选项</li>
+      </ul>
+    </div>
+  </div>
+</div>

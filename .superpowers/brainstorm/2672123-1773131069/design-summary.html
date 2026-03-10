@@ -1,0 +1,199 @@
+<h2>SuperMart MVP 技术方案总结</h2>
+<p class="subtitle">基于 Brainstorming 确定的技术架构</p>
+
+<div class="section">
+  <h3>📋 技术决策清单</h3>
+  <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+    <tr style="background: #f5f5f5;">
+      <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">决策项</th>
+      <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">选择</th>
+      <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">理由</th>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>后端架构</strong></td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;">Next.js API Routes + Python</td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;">简化部署，Python 专注 AI</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>数据库</strong></td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;">Supabase (PostgreSQL)</td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;">内置认证、存储、搜索</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>用户认证</strong></td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;">邮箱注册</td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;">MVP 简洁，零成本</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>前端 UI</strong></td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;">shadcn/ui + Tailwind</td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;">现代设计，高度可定制</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>AI 功能</strong></td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;">用户自带 API Key</td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;">有 AI 能力，无平台成本</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px;"><strong>部署方案</strong></td>
+      <td style="padding: 10px;">Vercel → 国内云</td>
+      <td style="padding: 10px;">快速验证，后期迁移</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>🏗️ 系统架构图</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 20px; background: #fafafa;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+
+        <!-- 用户层 -->
+        <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; text-align: center;">
+          <strong>👤 用户</strong>
+          <span style="margin-left: 8px; font-size: 12px; color: #666;">浏览器 / PWA</span>
+        </div>
+
+        <div style="text-align: center; color: #bbb;">↓ HTTPS</div>
+
+        <!-- 前端 + API -->
+        <div style="background: #fff3e0; padding: 16px; border-radius: 8px;">
+          <div style="text-align: center; margin-bottom: 12px;"><strong>Next.js (Vercel)</strong></div>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+            <div style="background: #fff; padding: 8px 12px; border-radius: 4px; font-size: 12px;">
+              📄 Pages (SSR/SSG)
+            </div>
+            <div style="background: #fff; padding: 8px 12px; border-radius: 4px; font-size: 12px;">
+              🔌 API Routes
+            </div>
+            <div style="background: #fff; padding: 8px 12px; border-radius: 4px; font-size: 12px;">
+              🔐 Auth (Supabase)
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; color: #bbb;">↓</div>
+
+        <!-- 数据层 + AI -->
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 200px; background: #e8f5e9; padding: 12px; border-radius: 8px;">
+            <div style="text-align: center; margin-bottom: 8px;"><strong>Supabase</strong></div>
+            <div style="font-size: 12px; text-align: center; color: #666;">
+              PostgreSQL + Auth + Storage
+            </div>
+          </div>
+          <div style="flex: 1; min-width: 200px; background: #fce4ec; padding: 12px; border-radius: 8px;">
+            <div style="text-align: center; margin-bottom: 8px;"><strong>AI 服务</strong></div>
+            <div style="font-size: 12px; text-align: center; color: #666;">
+              通义千问 / 智谱GLM (用户Key)
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>📊 核心数据模型</h3>
+  <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+
+    <div style="flex: 1; min-width: 200px; background: #f5f5f5; padding: 12px; border-radius: 8px;">
+      <div style="font-weight: bold; margin-bottom: 8px;">👤 User</div>
+      <ul style="margin: 0; padding-left: 16px; font-size: 12px;">
+        <li>id, email, name</li>
+        <li>avatar_url, bio</li>
+        <li>created_at, updated_at</li>
+      </ul>
+    </div>
+
+    <div style="flex: 1; min-width: 200px; background: #f5f5f5; padding: 12px; border-radius: 8px;">
+      <div style="font-weight: bold; margin-bottom: 8px;">📦 Skill/Agent</div>
+      <ul style="margin: 0; padding-left: 16px; font-size: 12px;">
+        <li>id, title, description</li>
+        <li>type (skill/agent)</li>
+        <li>category, tags</li>
+        <li>content (JSON)</li>
+        <li>author_id, status</li>
+      </ul>
+    </div>
+
+    <div style="flex: 1; min-width: 200px; background: #f5f5f5; padding: 12px; border-radius: 8px;">
+      <div style="font-weight: bold; margin-bottom: 8px;">⭐ Review</div>
+      <ul style="margin: 0; padding-left: 16px; font-size: 12px;">
+        <li>id, skill_id, user_id</li>
+        <li>rating (1-5)</li>
+        <li>comment</li>
+        <li>created_at</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<div class="section">
+  <h3>🚀 MVP 功能模块</h3>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+
+    <div style="background: #e8f5e9; padding: 12px; border-radius: 8px;">
+      <div style="font-weight: bold; margin-bottom: 4px;">1. 用户系统</div>
+      <ul style="margin: 0; padding-left: 16px; font-size: 12px; color: #666;">
+        <li>邮箱注册/登录</li>
+        <li>个人资料管理</li>
+        <li>我的内容/收藏</li>
+      </ul>
+    </div>
+
+    <div style="background: #e3f2fd; padding: 12px; border-radius: 8px;">
+      <div style="font-weight: bold; margin-bottom: 4px;">2. 浏览搜索</div>
+      <ul style="margin: 0; padding-left: 16px; font-size: 12px; color: #666;">
+        <li>分类浏览</li>
+        <li>关键词搜索</li>
+        <li>排序筛选</li>
+      </ul>
+    </div>
+
+    <div style="background: #fff3e0; padding: 12px; border-radius: 8px;">
+      <div style="font-weight: bold; margin-bottom: 4px;">3. 内容详情</div>
+      <ul style="margin: 0; padding-left: 16px; font-size: 12px; color: #666;">
+        <li>基本信息展示</li>
+        <li>操作手册</li>
+        <li>使用案例</li>
+      </ul>
+    </div>
+
+    <div style="background: #fce4ec; padding: 12px; border-radius: 8px;">
+      <div style="font-weight: bold; margin-bottom: 4px;">4. 评论评分</div>
+      <ul style="margin: 0; padding-left: 16px; font-size: 12px; color: #666;">
+        <li>五星评分</li>
+        <li>文字评论</li>
+        <li>评论列表</li>
+      </ul>
+    </div>
+
+    <div style="background: #f3e5f5; padding: 12px; border-radius: 8px;">
+      <div style="font-weight: bold; margin-bottom: 4px;">5. 内容创建</div>
+      <ul style="margin: 0; padding-left: 16px; font-size: 12px; color: #666;">
+        <li>Markdown 编辑</li>
+        <li>JSON 配置</li>
+        <li>文件上传</li>
+      </ul>
+    </div>
+
+    <div style="background: #e0f2f1; padding: 12px; border-radius: 8px;">
+      <div style="font-weight: bold; margin-bottom: 4px;">6. AI 辅助</div>
+      <ul style="margin: 0; padding-left: 16px; font-size: 12px; color: #666;">
+        <li>API Key 配置</li>
+        <li>AI 内容生成</li>
+        <li>模型选择</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<div class="section" style="background: #e8f5e9; padding: 16px; border-radius: 8px;">
+  <h3 style="margin-top: 0;">✅ 请确认设计方案</h3>
+  <p style="margin-bottom: 0;">以上是基于 Brainstorming 确定的完整技术方案。如果确认无误，我将编写详细的设计文档并创建实施计划。</p>
+</div>

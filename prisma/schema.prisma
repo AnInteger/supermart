@@ -1,0 +1,241 @@
+// Prisma Schema for SuperMart
+// 数据库：PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// 用户相关
+// ============================================
+
+/// 用户表 - 存储所有注册用户
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatar    String?  // 头像URL
+  bio       String?  // 个人简介
+  role      UserRole @default(USER)
+
+  // AI配置（用户可配置自己的API Key）
+  aiConfig  Json?    // { provider: string, apiKey?: string }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 关联
+  contents    Content[]
+  comments    Comment[]
+  ratings     Rating[]
+  collections Collection[]
+
+  @@index([email])
+  @@map("users")
+}
+
+enum UserRole {
+  USER  // 普通用户
+  ADMIN // 管理员
+}
+
+// ============================================
+// 分类相关
+// ============================================
+
+/// 分类表 - 行业分类（软件、建筑、法律、设计、社媒运营等）
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique  // URL友好标识
+  icon      String?           // 图标名称或URL
+  sortOrder Int      @default(0)
+
+  // 层级支持（后期扩展）
+  parentId  String?
+  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryTree")
+
+  contents Content[]
+
+  @@index([slug])
+  @@map("categories")
+}
+
+// ============================================
+// 内容相关（Skill/Agent）
+// ============================================
+
+/// 内容表 - 存储 Skill 和 Agent
+model Content {
+  id          String        @id @default(cuid())
+  type        ContentType
+
+  // 基本信息
+  name        String
+  description String        @db.Text
+  authorId    String
+
+  // 详细内容（Markdown格式）
+  instruction String?       @db.Text  // 操作指令
+  toolsConfig Json?                   // 工具配置 { tools: [], apis: [] }
+  setupGuide  String?       @db.Text  // 分步设置指南
+  examples    String?       @db.Text  // 使用案例/示例
+
+  // 分类
+  categoryId  String
+
+  // 状态
+  status      ContentStatus @default(DRAFT)
+  isFeatured  Boolean       @default(false)  // 精选推荐
+
+  // 统计
+  viewCount   Int           @default(0)
+  downloadCount Int         @default(0)
+
+  // 评分缓存（避免每次join计算）
+  avgRating   Float?        // 平均评分
+  ratingCount Int           @default(0)  // 评分数量
+
+  // 时间戳
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  publishedAt DateTime?     // 发布时间
+
+  // 关联
+  author      User          @relation(fields: [authorId], references: [id])
+  category    Category      @relation(fields: [categoryId], references: [id])
+  files       File[]
+  comments    Comment[]
+  ratings     Rating[]
+  collections Collection[]
+  tags        ContentTag[]
+
+  @@index([type, status])
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([createdAt(sort: Desc)])
+  @@index([viewCount(sort: Desc)])
+  @@index([avgRating(sort: Desc)])
+  @@map("contents")
+}
+
+enum ContentType {
+  SKILL
+  AGENT
+}
+
+enum ContentStatus {
+  DRAFT     // 草稿
+  PUBLISHED // 已发布
+  ARCHIVED  // 已归档
+}
+
+// ============================================
+// 标签相关
+// ============================================
+
+/// 标签表
+model Tag {
+  id        String        @id @default(cuid())
+  name      String        @unique
+  slug      String        @unique
+  contents  ContentTag[]
+
+  @@map("tags")
+}
+
+/// 内容-标签关联表（多对多）
+model ContentTag {
+  contentId String
+  tagId     String
+
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([contentId, tagId])
+  @@map("content_tags")
+}
+
+// ============================================
+// 文件相关
+// ============================================
+
+/// 文件表 - 存储上传的脚本、模板等
+model File {
+  id        String   @id @default(cuid())
+  contentId String
+
+  filename  String   // 原始文件名
+  url       String   // 存储URL
+  type      String   // MIME类型
+  size      Int      // 文件大小（字节）
+
+  createdAt DateTime @default(now())
+
+  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([contentId])
+  @@map("files")
+}
+
+// ============================================
+// 互动相关
+// ============================================
+
+/// 评论表
+model Comment {
+  id        String   @id @default(cuid())
+  contentId String
+  userId    String
+
+  body      String   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([contentId, createdAt(sort: Desc)])
+  @@map("comments")
+}
+
+/// 评分表
+model Rating {
+  id        String   @id @default(cuid())
+  contentId String
+  userId    String
+
+  score     Int      // 1-5星
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, userId])  // 每个用户对每个内容只能评分一次
+  @@map("ratings")
+}
+
+/// 收藏表
+model Collection {
+  id        String   @id @default(cuid())
+  userId    String
+  contentId String
+
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentId])  // 防止重复收藏
+  @@index([userId])
+  @@map("collections")
+}

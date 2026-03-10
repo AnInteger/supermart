@@ -1,0 +1,85 @@
+<h2>SuperMart 技术架构概览</h2>
+<p class="subtitle">MVP 阶段的系统架构设计</p>
+
+<div class="mockup">
+  <div class="mockup-header">系统架构</div>
+  <div class="mockup-body" style="padding: 20px;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+
+      <!-- 用户层 -->
+      <div style="background: #e3f2fd; padding: 16px; border-radius: 8px; text-align: center;">
+        <strong>用户层</strong>
+        <p style="margin: 8px 0 0 0; font-size: 14px; color: #666;">Web浏览器 / PWA</p>
+      </div>
+
+      <!-- 箭头 -->
+      <div style="text-align: center; color: #999;">↓</div>
+
+      <!-- 前端层 -->
+      <div style="background: #fff3e0; padding: 16px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 12px;"><strong>前端层 - Next.js</strong></div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+          <span style="background: #ffe0b2; padding: 4px 8px; border-radius: 4px; font-size: 12px;">页面渲染 (SSR/SSG)</span>
+          <span style="background: #ffe0b2; padding: 4px 8px; border-radius: 4px; font-size: 12px;">API Routes</span>
+          <span style="background: #ffe0b2; padding: 4px 8px; border-radius: 4px; font-size: 12px;">用户认证</span>
+        </div>
+      </div>
+
+      <!-- 箭头 -->
+      <div style="text-align: center; color: #999;">↓</div>
+
+      <!-- 后端层 -->
+      <div style="background: #e8f5e9; padding: 16px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 12px;"><strong>后端层 - Python (待确认)</strong></div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+          <span style="background: #c8e6c9; padding: 4px 8px; border-radius: 4px; font-size: 12px;">业务逻辑</span>
+          <span style="background: #c8e6c9; padding: 4px 8px; border-radius: 4px; font-size: 12px;">AI 服务集成</span>
+          <span style="background: #c8e6c9; padding: 4px 8px; border-radius: 4px; font-size: 12px;">数据处理</span>
+        </div>
+      </div>
+
+      <!-- 箭头 -->
+      <div style="text-align: center; color: #999;">↓</div>
+
+      <!-- 数据层 -->
+      <div style="background: #fce4ec; padding: 16px; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 12px;"><strong>数据层</strong></div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+          <span style="background: #f8bbd9; padding: 4px 8px; border-radius: 4px; font-size: 12px;">PostgreSQL</span>
+          <span style="background: #f8bbd9; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Redis</span>
+          <span style="background: #f8bbd9; padding: 4px 8px; border-radius: 4px; font-size: 12px;">文件存储</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>待确认的技术决策</h3>
+  <p>需求文档提到后端使用 Python (FastAPI/Django)，需要确认具体选择：</p>
+
+  <div class="options">
+    <div class="option" data-choice="fastapi" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>FastAPI</h3>
+        <p>现代异步框架，性能优秀，自动API文档，适合AI/ML集成</p>
+      </div>
+    </div>
+    <div class="option" data-choice="django" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Django</h3>
+        <p>全功能框架，内置Admin、ORM、认证系统，开发效率高</p>
+      </div>
+    </div>
+    <div class="option" data-choice="both" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>混合方案</h3>
+        <p>Next.js API Routes 处理轻量逻辑，Python 仅处理 AI 任务</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,112 @@
+<h2>部署方案</h2>
+<p class="subtitle">MVP 阶段的应用部署策略</p>
+
+<div class="mockup">
+  <div class="mockup-header">混合架构部署</div>
+  <div class="mockup-body" style="padding: 20px;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+
+      <!-- 架构图 -->
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center;">
+        <div style="background: #fff3e0; padding: 12px 16px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 12px; color: #666;">前端</div>
+          <div style="font-weight: bold;">Next.js</div>
+        </div>
+        <div style="color: #999;">→</div>
+        <div style="background: #e3f2fd; padding: 12px 16px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 12px; color: #666;">数据库</div>
+          <div style="font-weight: bold;">Supabase</div>
+        </div>
+        <div style="color: #999;">→</div>
+        <div style="background: #e8f5e9; padding: 12px 16px; border-radius: 8px; text-align: center;">
+          <div style="font-size: 12px; color: #666;">AI 服务</div>
+          <div style="font-weight: bold;">Python</div>
+        </div>
+      </div>
+
+      <!-- 说明 -->
+      <div style="background: #f5f5f5; padding: 12px; border-radius: 8px; font-size: 13px;">
+        <strong>部署要点：</strong>
+        <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+          <li>Next.js 前端部署到 Vercel（免费）或国内云</li>
+          <li>Supabase 云服务（免费额度）</li>
+          <li>Python AI 服务需要单独部署</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>问题6：前端部署方式</h3>
+
+  <div class="options">
+    <div class="option" data-choice="vercel" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Vercel (推荐)</h3>
+        <p>Next.js 官方托管，零配置部署，免费额度充足，国内访问可能较慢</p>
+      </div>
+    </div>
+    <div class="option" data-choice="aliyun" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>阿里云 / 腾讯云</h3>
+        <p>国内访问快，需要备案，运维成本较高，适合正式运营</p>
+      </div>
+    </div>
+    <div class="option" data-choice="zeabur" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>Zeabur / Railway</h3>
+        <p>支持国内优化线路，一键部署，价格适中</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h4>Python AI 服务部署</h4>
+  <p style="font-size: 13px; color: #666; margin-bottom: 12px;">
+    由于选择"用户自带 API Key"，Python 服务主要用于代理 AI 调用，可以部署到：
+  </p>
+  <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+    <span style="background: #e3f2fd; padding: 8px 12px; border-radius: 4px; font-size: 13px;">Vercel Python Runtime</span>
+    <span style="background: #e3f2fd; padding: 8px 12px; border-radius: 4px; font-size: 13px;">Fly.io</span>
+    <span style="background: #e3f2fd; padding: 8px 12px; border-radius: 4px; font-size: 13px;">Railway</span>
+  </div>
+  <p style="font-size: 13px; color: #888; margin-top: 8px;">
+    💡 MVP 阶段建议：先用 Vercel Python Runtime 或直接在 Next.js API Routes 中实现 AI 调用
+  </p>
+</div>
+
+<div class="section">
+  <h4>成本估算（月）</h4>
+  <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+    <tr style="background: #f5f5f5;">
+      <th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">服务</th>
+      <th style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Vercel</th>
+      <th style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">阿里云</th>
+      <th style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Zeabur</th>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">前端托管</td>
+      <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">免费</td>
+      <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">~¥100</td>
+      <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">~$5</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">国内访问</td>
+      <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">一般</td>
+      <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">快</td>
+      <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">较快</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px;">备案需求</td>
+      <td style="padding: 8px; text-align: center;">不需要</td>
+      <td style="padding: 8px; text-align: center;">需要</td>
+      <td style="padding: 8px; text-align: center;">不需要</td>
+    </tr>
+  </table>
+</div>
