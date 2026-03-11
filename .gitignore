@@ -42,3 +42,4 @@ prisma/*.db-journal
 
 # firebase
 firebase-debug.log
+.playwright-mcp/
