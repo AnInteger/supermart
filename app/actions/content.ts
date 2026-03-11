@@ -3,9 +3,9 @@
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth';
 import { contentService } from '@/services/content.service';
-import { ApiResponse, PaginatedResponse } from '@/types/api';
-import { getContentsSchema } from '@/validators';
-import { ContentStatus } from '@prisma/client';
+import { ApiResponse, PaginatedResponse, ContentListItem, ContentDetail, ToolsConfig } from '@/types/api';
+import { getContentsSchema, createContentSchema, updateContentSchema } from '@/validators';
+import { ContentStatus, Prisma } from '@prisma/client';
 
 /**
  * 获取内容列表
@@ -33,24 +33,30 @@ export async function getContents(
           type: content.type,
           name: content.name,
           description: content.description,
-          author: content.author,
+          author: {
+            id: content.author.id,
+            name: content.author.name || '',
+            avatar: content.author.avatar,
+          },
           category: content.category,
           tags: content.tags.map((t) => t.tag),
           avgRating: content.avgRating,
+          ratingCount: content._count.ratings,
           viewCount: content.viewCount,
+          isFeatured: content.isFeatured ?? false,
           createdAt: content.createdAt.toISOString(),
           _count: content._count,
         })),
         pagination: result.pagination,
       },
-    }
+    };
   } catch (error) {
-    console.error('Get contents error:', error)
+    console.error('Get contents error:', error);
     return {
       success: false,
-      error: '获取内容列表失败'
-      code: 'INTERNAL_error',
-    }
+      error: '获取内容列表失败',
+      code: 'INTERNAL_ERROR',
+    };
   }
 }
 
@@ -60,19 +66,22 @@ export async function getContents(
 export async function getContent(id: string): Promise<ApiResponse<ContentDetail>> {
   const session = await auth();
   const userId = session?.user?.id;
+
   try {
     const content = await contentService.getById(id, userId);
     if (!content) {
       return {
         success: false,
         error: '内容不存在',
-        code: 'NOT_found',
-      }
+        code: 'NOT_FOUND',
+      };
     }
+
     // 增加浏览计数（仅发布状态）
     if (content.status === ContentStatus.PUBLISHED) {
-      await contentService.incrementViewCount(id)
+      await contentService.incrementViewCount(id);
     }
+
     return {
       success: true,
       data: {
@@ -80,33 +89,37 @@ export async function getContent(id: string): Promise<ApiResponse<ContentDetail>
         type: content.type,
         name: content.name,
         description: content.description,
-        instruction: content.instruction,
-        toolsConfig: content.toolsConfig as Record<string, unknown> | null,
-        setupGuide: content.setupGuide,
-        examples: content.examples,
+        content: content.content,
+        toolsConfig: content.toolsConfig as ToolsConfig | null,
         status: content.status,
         publishedAt: content.publishedAt?.toISOString() || null,
         updatedAt: content.updatedAt.toISOString(),
-        author: content.author,
+        author: {
+          id: content.author.id,
+          name: content.author.name || '',
+          avatar: content.author.avatar,
+        },
         category: content.category,
         tags: content.tags.map((t) => t.tag),
-        files: content.files,
+        files: content.files.map((f) => ({
+          ...f,
+          createdAt: f.createdAt.toISOString(),
+        })),
         avgRating: content.avgRating,
+        ratingCount: content._count.ratings,
         viewCount: content.viewCount,
+        isFeatured: content.isFeatured ?? false,
         isOwner: content.isOwner,
-        userRating: content.userRating,
-        isCollected: content.isCollected,
         createdAt: content.createdAt.toISOString(),
-        _count: content._count,
-      }
-    }
+      },
+    };
   } catch (error) {
-    console.error('Get content error:', error)
+    console.error('Get content error:', error);
     return {
       success: false,
-      error: '获取内容详情失败'
-      code: 'internal_error',
-    }
+      error: '获取内容详情失败',
+      code: 'INTERNAL_ERROR',
+    };
   }
 }
 
@@ -121,7 +134,7 @@ export async function createContent(
     return {
       success: false,
       error: '请先登录',
-      code: 'unauthorized',
+      code: 'UNAUTHORIZED',
     };
   }
 
@@ -132,27 +145,32 @@ export async function createContent(
       error: '参数验证失败',
       code: 'VALIDATION_ERROR',
       details: validated.error.flatten().fieldErrors as Record<string, string[]>,
-    }
+    };
   }
 
   try {
-    const content = await contentService.create(validated.data, session.user.id)
-    revalidatePath('/explore')
+    // 转换 toolsConfig 为 Prisma 兼容类型
+    const createData = {
+      ...validated.data,
+      toolsConfig: validated.data.toolsConfig as Prisma.InputJsonValue | undefined,
+    };
+    const content = await contentService.create(createData, session.user.id);
+    revalidatePath('/explore');
     return {
       success: true,
       data: {
         id: content.id,
         name: content.name,
         status: content.status,
-      }
-    }
+      },
+    };
   } catch (error) {
-    console.error('Create content error:', error)
+    console.error('Create content error:', error);
     return {
       success: false,
       error: '创建内容失败',
-      code: 'internal_error',
-    }
+      code: 'INTERNAL_ERROR',
+    };
   }
 }
 
@@ -168,47 +186,52 @@ export async function updateContent(
     return {
       success: false,
       error: '请先登录',
-      code: 'unauthorized',
-    }
+      code: 'UNAUTHORIZED',
+    };
   }
 
   // 检查权限
-  const existing = await contentService.getById(id, session.user.id)
+  const existing = await contentService.getById(id, session.user.id);
   if (!existing || !existing.isOwner) {
     return {
       success: false,
       error: '无权编辑此内容',
-      code: 'forbidden',
-    }
+      code: 'FORBIDDEN',
+    };
   }
 
-  const validated = updateContentSchema.safeParse({ ...data, id })
+  const validated = updateContentSchema.safeParse({ ...data, id });
   if (!validated.success) {
     return {
       success: false,
       error: '参数验证失败',
       code: 'VALIDATION_ERROR',
-    }
+    };
   }
 
   try {
-    const content = await contentService.update(id, validated.data)
-    revalidatePath(`/content/${id}`)
-    revalidatePath('/explore')
+    // 转换 toolsConfig 为 Prisma 兼容类型
+    const updateData = {
+      ...validated.data,
+      toolsConfig: validated.data.toolsConfig as Prisma.InputJsonValue | undefined,
+    };
+    const content = await contentService.update(id, updateData);
+    revalidatePath(`/content/${id}`);
+    revalidatePath('/explore');
     return {
       success: true,
       data: {
         id: content.id,
         name: content.name,
-      }
-    }
+      },
+    };
   } catch (error) {
-    console.error('Update content error:', error)
+    console.error('Update content error:', error);
     return {
       success: false,
       error: '更新内容失败',
-      code: 'internal_error',
-    }
+      code: 'INTERNAL_ERROR',
+    };
   }
 }
 
@@ -223,37 +246,37 @@ export async function publishContent(
     return {
       success: false,
       error: '请先登录',
-      code: 'unauthorized',
-    }
+      code: 'UNAUTHORIZED',
+    };
   }
 
-  const existing = await contentService.getById(id, session.user.id)
+  const existing = await contentService.getById(id, session.user.id);
   if (!existing || !existing.isOwner) {
     return {
       success: false,
       error: '无权发布此内容',
-      code: 'forbidden',
-    }
+      code: 'FORBIDDEN',
+    };
   }
 
   try {
-    const content = await contentService.publish(id)
-    revalidatePath(`/content/${id}`)
-    revalidatePath('/explore')
+    const content = await contentService.publish(id);
+    revalidatePath(`/content/${id}`);
+    revalidatePath('/explore');
     return {
       success: true,
       data: {
         id: content.id,
         status: content.status,
-      }
-    }
+      },
+    };
   } catch (error) {
-    console.error('Publish content error:', error)
+    console.error('Publish content error:', error);
     return {
       success: false,
       error: '发布内容失败',
-      code: 'internal_error',
-    }
+      code: 'INTERNAL_ERROR',
+    };
   }
 }
 
@@ -266,33 +289,33 @@ export async function deleteContent(id: string): Promise<ApiResponse<{ success: 
     return {
       success: false,
       error: '请先登录',
-      code: 'unauthorized',
-    }
+      code: 'UNAUTHORIZED',
+    };
   }
 
-  const existing = await contentService.getById(id, session.user.id)
+  const existing = await contentService.getById(id, session.user.id);
   if (!existing || !existing.isOwner) {
     return {
       success: false,
       error: '无权删除此内容',
-      code: 'forbidden',
-    }
+      code: 'FORBIDDEN',
+    };
   }
 
   try {
-    await contentService.delete(id)
-    revalidatePath('/explore')
+    await contentService.delete(id);
+    revalidatePath('/explore');
     return {
       success: true,
       data: { success: true },
-    }
+    };
   } catch (error) {
-    console.error('Delete content error:', error)
+    console.error('Delete content error:', error);
     return {
       success: false,
       error: '删除内容失败',
-      code: 'internal_error',
-    }
+      code: 'INTERNAL_ERROR',
+    };
   }
 }
 
@@ -302,39 +325,53 @@ export async function deleteContent(id: string): Promise<ApiResponse<{ success: 
 export async function getMyContents(
   params: Record<string, unknown>
 ): Promise<ApiResponse<PaginatedResponse<ContentListItem>>> {
- {
   const session = await auth();
   if (!session?.user?.id) {
     return {
       success: false,
       error: '请先登录',
-      code: 'unauthorized',
-    }
+      code: 'UNAUTHORIZED',
+    };
   }
 
-  const result = await contentService.getList({
-    ...params,
-    authorId: session.user.id,
-  })
-  return {
-    success: true,
-    data: {
-      items: result.items.map((content) => ({
-        id: content.id,
-        type: content.type,
-        name: content.name,
-        description: content.description,
-        author: content.author,
-        category: content.category,
-        tags: content.tags.map((t) => t.tag),
-        avgRating: content.avgRating,
-        viewCount: content.viewCount,
-        createdAt: content.createdAt.toISOString(),
-        status: content.status,
-        _count: content._count,
-      }),
-      pagination: result.pagination,
-    }
+  try {
+    const result = await contentService.getList({
+      ...params,
+      authorId: session.user.id,
+    });
+    return {
+      success: true,
+      data: {
+        items: result.items.map((content) => ({
+          id: content.id,
+          type: content.type,
+          name: content.name,
+          description: content.description,
+          author: {
+            id: content.author.id,
+            name: content.author.name || '',
+            avatar: content.author.avatar,
+          },
+          category: content.category,
+          tags: content.tags.map((t) => t.tag),
+          avgRating: content.avgRating,
+          ratingCount: content._count.ratings,
+          viewCount: content.viewCount,
+          isFeatured: content.isFeatured ?? false,
+          createdAt: content.createdAt.toISOString(),
+          status: content.status,
+          _count: content._count,
+        })),
+        pagination: result.pagination,
+      },
+    };
+  } catch (error) {
+    console.error('Get my contents error:', error);
+    return {
+      success: false,
+      error: '获取我的内容失败',
+      code: 'INTERNAL_ERROR',
+    };
   }
 }
 
@@ -343,10 +380,10 @@ export async function getMyContents(
  */
 export async function getHomeData() {
   try {
-    const data = await contentService.getHomeData()
-    return { success: true, data }
+    const data = await contentService.getHomeData();
+    return { success: true, data };
   } catch (error) {
-    console.error('Get home data error:', error)
-    return { success: false, error: '获取首页数据失败' }
+    console.error('Get home data error:', error);
+    return { success: false, error: '获取首页数据失败' };
   }
 }

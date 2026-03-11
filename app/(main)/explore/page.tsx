@@ -1,94 +1,138 @@
-import { getContents } from '@/app/actions/content';
+import Link from 'next/link';
+import { getContents, getHomeData } from '@/app/actions/content';
+import { getCategories } from '@/app/actions/meta';
 import { ContentList } from '@/components/content/ContentList';
-import { CategoryFilter } from '@/components/content/CategoryFilter';
-import { SearchBar } from '@/components/common/SearchBar';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/common/Pagination';
+import { Loader2 } from 'lucide-react';
 
 interface ExplorePageProps {
-  searchParams: {
+  searchParams: Promise<{
     category?: string;
     type?: 'SKILL' | 'AGENT';
     sort?: 'latest' | 'popular' | 'rating';
     page?: string;
     query?: string;
-  };
+  }>;
 }
 
 export default async function ExplorePage({ searchParams }: ExplorePageProps) {
+  const params = await searchParams;
+  const page = parseInt(params.page || '1');
+
   const [contentsResult, categoriesResult] = await Promise.all([
     getContents({
-      categoryId: searchParams.category,
-      type: searchParams.type,
-      sort: searchParams.sort,
-      page: parseInt(searchParams.page || '1'),
+      categoryId: params.category,
+      type: params.type,
+      sort: params.sort || 'latest',
+      page,
       pageSize: 12,
-      query: searchParams.query,
+      query: params.query,
     }),
     getCategories(),
-  ])
+  ]);
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Hero Section */}
-      <section className="text-center py-12 mb-12">
-        <h1 className="text-4xl font-bold mb-4">SuperMart</h1>
-        <p className="text-xl text-muted-foreground mb-8">
-          国内垂类AI工具平台，让专业知识规模化复用
+      {/* 页面标题 */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">探索</h1>
+        <p className="text-muted-foreground">
+          发现并使用各类 Skill 和 Agent
         </p>
+      </div>
 
-        <div className="flex justify-center gap-8 text-center">
-          <div>
-            <p className="text-3xl font-bold">{stats.totalContents}</p>
-            <p className="text-sm text-muted-foreground">Skill/Agent</p>
-          </div>
-          <div>
-            <p className="text-3xl font-bold">{stats.totalUsers}</p>
-            <p className="text-sm text-muted-foreground">用户</p>
-          </div>
+      {/* 筛选区域 */}
+      <div className="flex flex-wrap gap-4 mb-8">
+        {/* 类型筛选 */}
+        <div className="flex gap-2">
+          <Link href="/explore">
+            <Button variant={!params.type ? 'default' : 'outline'}>
+              全部
+            </Button>
+          </Link>
+          <Link href="/explore?type=SKILL">
+            <Button variant={params.type === 'SKILL' ? 'default' : 'outline'}>
+              Skill
+            </Button>
+          </Link>
+          <Link href="/explore?type=AGENT">
+            <Button variant={params.type === 'AGENT' ? 'default' : 'outline'}>
+              Agent
+            </Button>
+          </Link>
         </div>
-      </section>
 
-      {/* 分类导航 */}
-      {categories.length > 0 && (
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">探索分类</h2>
-          <div className="flex flex-wrap gap-3">
-            {categories.map((category) => (
-              <Link
-                key={category.id}
-                href={`/explore?category=${category.slug}`}
-                className="text-sm py-2 px-4 hover:bg-primary hover:underline"
+        {/* 排序 */}
+        <div className="flex gap-2 ml-auto">
+          <Link href={`/explore?${new URLSearchParams({ ...params, sort: 'latest' }).toString()}`}>
+            <Button variant={params.sort === 'latest' || !params.sort ? 'default' : 'outline'}>
+              最新
+            </Button>
+          </Link>
+          <Link href={`/explore?${new URLSearchParams({ ...params, sort: 'popular' }).toString()}`}>
+            <Button variant={params.sort === 'popular' ? 'default' : 'outline'}>
+              热门
+            </Button>
+          </Link>
+          <Link href={`/explore?${new URLSearchParams({ ...params, sort: 'rating' }).toString()}`}>
+            <Button variant={params.sort === 'rating' ? 'default' : 'outline'}>
+              评分
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* 分类筛选 */}
+      {categoriesResult.success && categoriesResult.data.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-8">
+          <Link href="/explore">
+            <Button variant={!params.category ? 'default' : 'ghost'} size="sm">
+              全部分类
+            </Button>
+          </Link>
+          {categoriesResult.data.map((category) => (
+            <Link
+              key={category.id}
+              href={`/explore?category=${category.id}`}
+            >
+              <Button
+                variant={params.category === category.id ? 'default' : 'ghost'}
+                size="sm"
               >
-                {category.icon && <span className="mr-2">{category.icon}</span>}
-                <span className="ml-2 text-muted-foreground">
-                  ({category.contentsCount})
-                </span>
-              </Link>
-            ))}
-          </div>
-        ))}
+                {category.icon && <span className="mr-1">{category.icon}</span>}
+                {category.name}
+              </Button>
+            </Link>
+          ))}
+        </div>
       )}
 
-      {/* 最新发布 */}
-      <section className="mb-12">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">最新发布</h2>
-          <Link href="/explore?sort=latest" className="text-sm text-primary hover:underline">
-            查看更多 →
-          </Link>
-        ))}
-      )}
+      {/* 内容列表 */}
+      {!contentsResult.success ? (
+        <Card>
+          <CardContent className="flex items-center justify-center py-12">
+            <p className="text-muted-foreground">加载失败，请刷新页面重试</p>
+          </CardContent>
+        </Card>
+      ) : contentsResult.data.items.length === 0 ? (
+        <Card>
+          <CardContent className="flex items-center justify-center py-12">
+            <p className="text-muted-foreground">暂无内容</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <ContentList items={contentsResult.data.items} />
 
-      {/* 热门内容 */}
-      <section className="mb-12">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">热门内容</h2>
-          <Link href="/explore?sort=popular" className="text-sm text-primary hover:underline">
-            查看更多 →
-          </Link>
-        )}
+          {/* 分页 */}
+          {contentsResult.data.pagination.totalPages > 1 && (
+            <div className="mt-8">
+              <Pagination pagination={contentsResult.data.pagination} />
+            </div>
+          )}
+        </>
       )}
     </div>
   );

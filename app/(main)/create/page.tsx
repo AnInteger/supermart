@@ -2,11 +2,8 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { getCategories } from '@/app/actions/meta';
 import { ContentForm } from '@/components/content/ContentForm';
-
 import { Loader2 } from 'lucide-react';
-
 import { Card, CardContent } from '@/components/ui/card';
-
 import { cn } from '@/lib/utils';
 
 export default async function CreatePage() {
@@ -20,11 +17,11 @@ export default async function CreatePage() {
 
   if (!categoriesResult.success) {
     return (
-      <div className={container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8">
         <Card>
-          <CardContent className="flex items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin" />
-          <p className="text-muted-foreground">加载失败，请刷新页面重试</p>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin mb-4" />
+            <p className="text-muted-foreground">加载失败，请刷新页面重试</p>
           </CardContent>
         </Card>
       </div>
@@ -32,9 +29,9 @@ export default async function CreatePage() {
   }
 
   return (
-    <div className={container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       <div className={cn('max-w-4xl mx-auto')}>
-        <h1 className={text-3xl font-bold mb-8">创建 Skill / Agent</h1>
+        <h1 className="text-3xl font-bold mb-8">创建 Skill / Agent</h1>
         <ContentForm
           mode="create"
           categories={categoriesResult.data}

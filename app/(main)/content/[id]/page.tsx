@@ -1,15 +1,16 @@
 import { notFound } from 'next/navigation';
-import { getContentById } from '@/app/actions/content';
-import { ContentDetail } from '@/components/content/ContentDetail';
+import { getContent } from '@/app/actions/content';
+import { ContentDetail as ContentDetailComponent } from '@/components/content/ContentDetail';
 
 interface ContentPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function ContentPage({ params }: ContentPageProps) {
-  const result = await getContentById(params.id);
+  const { id } = await params;
+  const result = await getContent(id);
 
   if (!result.success || !result.data) {
     notFound();
@@ -17,14 +18,15 @@ export default async function ContentPage({ params }: ContentPageProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <ContentDetail content={result.data} />
+      <ContentDetailComponent content={result.data} />
     </div>
   );
 }
 
 // 生成元数据
 export async function generateMetadata({ params }: ContentPageProps) {
-  const result = await getContentById(params.id);
+  const { id } = await params;
+  const result = await getContent(id);
 
   if (!result.success || !result.data) {
     return { title: '内容不存在' };

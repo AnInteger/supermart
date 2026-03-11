@@ -44,7 +44,7 @@ export async function getComments(
         take: pageSize,
         orderBy: { createdAt: 'desc' },
         include: {
-          author: {
+          user: {
             select: { id: true, name: true, avatar: true },
           },
         },
@@ -58,8 +58,12 @@ export async function getComments(
         items: comments.map((c) => ({
           id: c.id,
           body: c.body,
-          author: c.author,
-          isOwner: userId === c.authorId,
+          author: {
+            id: c.user.id,
+            name: c.user.name || '',
+            avatar: c.user.avatar,
+          },
+          isOwner: userId === c.userId,
           createdAt: c.createdAt.toISOString(),
           updatedAt: c.updatedAt.toISOString(),
         })),
@@ -104,11 +108,11 @@ export async function createComment(
     const comment = await prisma.comment.create({
       data: {
         contentId,
-        authorId: session.user.id,
+        userId: session.user.id,
         body,
       },
       include: {
-        author: {
+        user: {
           select: { id: true, name: true, avatar: true },
         },
       },
@@ -121,7 +125,11 @@ export async function createComment(
       data: {
         id: comment.id,
         body: comment.body,
-        author: comment.author,
+        author: {
+          id: comment.user.id,
+          name: comment.user.name || '',
+          avatar: comment.user.avatar,
+        },
         isOwner: true,
         createdAt: comment.createdAt.toISOString(),
         updatedAt: comment.updatedAt.toISOString(),
@@ -153,14 +161,14 @@ export async function deleteComment(
   try {
     const comment = await prisma.comment.findUnique({
       where: { id },
-      select: { authorId: true, contentId: true },
+      select: { userId: true, contentId: true },
     });
 
     if (!comment) {
       return { success: false, error: '评论不存在', code: 'NOT_FOUND' };
     }
 
-    if (comment.authorId !== session.user.id) {
+    if (comment.userId !== session.user.id) {
       return { success: false, error: '无权删除此评论', code: 'FORBIDDEN' };
     }
 
@@ -293,8 +301,9 @@ export async function toggleCollection(
     const existing = await prisma.collection.findUnique({
       where: {
         userId_contentId: {
-        userId: session.user.id,
-        contentId,
+          userId: session.user.id,
+          contentId,
+        },
       },
     });
 

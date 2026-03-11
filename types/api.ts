@@ -161,10 +161,8 @@ export interface ToolsConfig {
  * 内容详情
  */
 export interface ContentDetail extends ContentListItem {
-  instruction: string | null;
+  content: string | null;
   toolsConfig: ToolsConfig | null;
-  setupGuide: string | null;
-  examples: string | null;
   status: ContentStatus;
   publishedAt: string | null;
   updatedAt: string;
@@ -247,10 +245,8 @@ export interface CreateContentInput {
   name: string;
   description: string;
   categoryId: string;
-  instruction?: string;
+  content?: string;
   toolsConfig?: ToolsConfig;
-  setupGuide?: string;
-  examples?: string;
   tagIds?: string[];
   fileIds?: string[];
   isDraft?: boolean;
@@ -260,10 +256,8 @@ export interface UpdateContentInput {
   name?: string;
   description?: string;
   categoryId?: string;
-  instruction?: string;
+  content?: string;
   toolsConfig?: ToolsConfig;
-  setupGuide?: string;
-  examples?: string;
   tagIds?: string[];
   fileIds?: string[];
 }

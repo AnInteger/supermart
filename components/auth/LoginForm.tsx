@@ -45,20 +45,26 @@ export function LoginForm() {
         redirect: false,
       });
 
+      // NextAuth v5: 成功时 result 为 undefined 或没有 error
+      // 失败时 result.error 包含错误信息
       if (result?.error) {
         toast.error('登录失败', {
           description: '邮箱或密码错误',
         });
+        setIsLoading(false);
       } else {
         toast.success('登录成功');
-        router.push('/');
+        // 先刷新 session，再跳转
         router.refresh();
+        // 等待一下让 session 更新
+        await new Promise(resolve => setTimeout(resolve, 500));
+        router.push('/');
       }
-    } catch {
+    } catch (error) {
+      console.error('Login error:', error);
       toast.error('登录失败', {
         description: '请稍后重试',
       });
-    } finally {
       setIsLoading(false);
     }
   }

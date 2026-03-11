@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useTransition, from 'react';
+import { useState, useTransition } from 'react';
 import { Heart } from 'lucide-react';
-import { toggleCollection, from '@/app/actions/interaction';
+import { toggleCollection } from '@/app/actions/interaction';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';

@@ -38,27 +38,25 @@ export function Header() {
             <div className="h-8 w-20 bg-muted animate-pulse rounded" />
           ) : session ? (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={session.user?.image || ''} alt={session.user?.name || ''} />
-                    <AvatarFallback>
-                      {session.user?.name?.charAt(0).toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
+              <DropdownMenuTrigger className="relative h-8 w-8 rounded-full border-0 bg-transparent cursor-pointer">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={session.user?.image || ''} alt={session.user?.name || ''} />
+                  <AvatarFallback>
+                    {session.user?.name?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuContent className="w-56" align="end">
                 <div className="flex flex-col space-y-1 p-2">
                   <p className="text-sm font-medium">{session.user?.name}</p>
                   <p className="text-xs text-muted-foreground">{session.user?.email}</p>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/profile">个人中心</Link>
+                <DropdownMenuItem onClick={() => window.location.href = '/profile'}>
+                  个人中心
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/profile/contents">我的内容</Link>
+                <DropdownMenuItem onClick={() => window.location.href = '/profile/contents'}>
+                  我的内容
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

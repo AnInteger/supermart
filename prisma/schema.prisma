@@ -127,10 +127,8 @@ model Content {
   authorId    String
 
   // 详细内容（Markdown格式）
-  instruction String?       @db.Text  // 操作指令
+  content     String?       @db.Text  // 完整的 Markdown 文档
   toolsConfig Json?                   // 工具配置 { tools: [], apis: [] }
-  setupGuide  String?       @db.Text  // 分步设置指南
-  examples    String?       @db.Text  // 使用案例/示例
 
   // 分类
   categoryId  String

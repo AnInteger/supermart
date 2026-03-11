@@ -29,7 +29,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, FileText } from 'lucide-react';
 
 // 动态导入 Markdown 编辑器（避免 SSR 问题）
 const MDEditor = dynamic(
@@ -38,6 +38,60 @@ const MDEditor = dynamic(
 );
 
 type ContentFormValues = z.infer<typeof createContentSchema>;
+
+// 默认模板
+const DEFAULT_TEMPLATE = `# {{name}}
+
+简要描述这个 Skill/Agent 的功能和使用场景...
+
+## When to Use This Skill
+
+描述什么场景下应该使用这个 Skill...
+
+## How to Use
+
+### Step 1: 安装/配置
+
+\`\`\`bash
+# 安装命令或配置步骤
+\`\`\`
+
+### Step 2: 基本用法
+
+详细的使用步骤...
+
+### Step 3: 高级用法
+
+进阶使用技巧...
+
+## Examples
+
+### Example 1: 基础示例
+
+\`\`\`
+示例代码或命令
+\`\`\`
+
+### Example 2: 高级示例
+
+\`\`\`
+更复杂的示例
+\`\`\`
+
+## Tips
+
+- 提示1
+- 提示2
+- 提示3
+
+## Common Issues
+
+### 问题1
+解决方案...
+
+### 问题2
+解决方案...
+`;
 
 interface ContentFormProps {
   mode: 'create' | 'edit';
@@ -54,24 +108,29 @@ export function ContentForm({
 }: ContentFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [isPublishing, setIsPublishing] = useState(false);
 
   const form = useForm<ContentFormValues>({
-    resolver: zodResolver(createContentSchema),
+    resolver: zodResolver(createContentSchema) as any,
     defaultValues: {
       type: 'SKILL',
       name: '',
       description: '',
       categoryId: '',
-      instruction: '',
-      setupGuide: '',
-      examples: '',
+      content: mode === 'create' ? DEFAULT_TEMPLATE : '',
       tagIds: [],
       fileIds: [],
       isDraft: true,
       ...defaultValues,
     },
   });
+
+  // 插入模板
+  const insertTemplate = () => {
+    const name = form.getValues('name') || '{{name}}';
+    const template = DEFAULT_TEMPLATE.replace('{{name}}', name);
+    form.setValue('content', template);
+    toast.success('已插入模板');
+  };
 
   const handleSubmit = (data: ContentFormValues, publish: boolean = false) => {
     startTransition(async () => {
@@ -80,7 +139,7 @@ export function ContentForm({
       if (mode === 'create') {
         result = await createContent({ ...data, isDraft: !publish });
         if (result.success && publish && result.data) {
-          await publishContent({ id: result.data.id });
+          await publishContent(result.data.id);
         }
       } else if (contentId) {
         result = await updateContent(contentId, data);
@@ -93,7 +152,17 @@ export function ContentForm({
         toast.success(publish ? '发布成功' : '保存成功');
         router.push(`/content/${result.data.id}`);
       } else {
-        toast.error(result?.error || '操作失败');
+        // 显示详细验证错误
+        const errorMsg = result?.error || '操作失败';
+        const details = result?.details as Record<string, string[]> | undefined;
+        if (details) {
+          const detailMsg = Object.entries(details)
+            .map(([field, msgs]) => `${field}: ${msgs.join(', ')}`)
+            .join('; ');
+          toast.error(`${errorMsg} - ${detailMsg}`);
+        } else {
+          toast.error(errorMsg);
+        }
       }
     });
   };
@@ -114,7 +183,7 @@ export function ContentForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>类型</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="选择类型" />
@@ -136,10 +205,18 @@ export function ContentForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>分类</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      key={categories.length > 0 ? 'loaded' : 'loading'}
+                    >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="选择分类" />
+                          <SelectValue placeholder="选择分类">
+                            {field.value
+                              ? categories.find(c => c.id === field.value)?.name
+                              : null}
+                          </SelectValue>
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -190,96 +267,51 @@ export function ContentForm({
           </CardContent>
         </Card>
 
-        {/* 操作指令 */}
+        {/* 内容编辑器 */}
         <Card>
           <CardHeader>
-            <CardTitle>操作指令</CardTitle>
-            <FormDescription>
-              告诉 AI 如何执行特定任务，支持 Markdown 格式
-            </FormDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>内容</CardTitle>
+                <FormDescription className="mt-1.5">
+                  编写完整的 Skill/Agent 文档，支持 Markdown 格式。建议包含：使用场景、安装步骤、示例代码、常见问题等
+                </FormDescription>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={insertTemplate}
+                className="shrink-0"
+              >
+                <FileText className="h-4 w-4 mr-1" />
+                使用模板
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <FormField
               control={form.control}
-              name="instruction"
+              name="content"
               render={({ field }) => (
                 <FormItem>
-                <FormControl>
-                  <div data-color-mode="light">
-                    <MDEditor
-                      value={field.value}
-                      onChange={field.onChange}
-                      height={300}
-                      preview="edit"
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+                  <FormControl>
+                    <div data-color-mode="light">
+                      <MDEditor
+                        value={field.value}
+                        onChange={field.onChange}
+                        height={500}
+                        preview="live"
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
             />
           </CardContent>
         </Card>
-        {/* 分步设置指南 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>分步设置指南</CardTitle>
-            <FormDescription>
-              详细的使用步骤，让用户能够正确配置和使用
-            </FormDescription>
-          </CardHeader>
-          <CardContent>
-            <FormField
-              control={form.control}
-              name="setupGuide"
-              render={({ field }) => (
-                <FormItem>
-                <FormControl>
-                  <div data-color-mode="light">
-                    <MDEditor
-                      value={field.value}
-                      onChange={field.onChange}
-                      height={300}
-                      preview="edit"
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-        {/* 使用案例 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>使用案例</CardTitle>
-            <FormDescription>
-              展示实际使用场景和效果，帮助用户理解
-            </FormDescription>
-          </CardHeader>
-          <CardContent>
-            <FormField
-              control={form.control}
-              name="examples"
-              render={({ field }) => (
-                <FormItem>
-                <FormControl>
-                  <div data-color-mode="light">
-                    <MDEditor
-                      value={field.value}
-                      onChange={field.onChange}
-                      height={200}
-                      preview="edit"
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
+
         {/* 操作按钮 */}
         <div className="flex justify-end gap-4">
           <Button
@@ -295,11 +327,13 @@ export function ContentForm({
             onClick={() => handleSubmit(form.getValues(), true)}
             disabled={isPending}
           >
-            {isPublishing ? (
+            {isPending ? (
               <>
-              <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                发布中...
+              </>
             ) : (
-              isPending ? '发布中...' : '发布'
+              '发布'
             )}
           </Button>
         </div>

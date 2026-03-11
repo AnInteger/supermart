@@ -4,7 +4,7 @@
  */
 import { prisma } from '@/lib/prisma';
 import { redis, cache, invalidateCache } from '@/lib/redis';
-import { ContentStatus, ContentType } from '@prisma/client';
+import { ContentStatus, ContentType, Prisma } from '@prisma/client';
 
 export interface GetContentsParams {
   type?: ContentType;
@@ -22,12 +22,11 @@ export interface CreateContentData {
   name: string;
   description: string;
   categoryId: string;
-  instruction?: string;
-  toolsConfig?: Record<string, unknown>;
-  setupGuide?: string;
-  examples?: string;
+  content?: string;
+  toolsConfig?: Prisma.InputJsonValue;
   tagIds?: string[];
   fileIds?: string[];
+  isDraft?: boolean;
 }
 
 export class ContentService {
@@ -90,7 +89,7 @@ export class ContentService {
         orderBy,
         include: {
           author: { select: { id: true, name: true, avatar: true } },
-          category: { select: { id: true, name: true, icon: true } },
+          category: { select: { id: true, name: true, icon: true, slug: true } },
           tags: { include: { tag: { select: { id: true, name: true, slug: true } } } },
           _count: { select: { comments: true, ratings: true, collections: true } },
         },
@@ -156,13 +155,14 @@ export class ContentService {
    * 创建内容
    */
   async create(data: CreateContentData, authorId: string) {
-    const { tagIds, fileIds, ...contentData } = data
+    const { tagIds, fileIds, isDraft, ...contentData } = data
 
     const content = await prisma.content.create({
       data: {
         ...contentData,
         authorId,
-        status: ContentStatus.DRAFT,
+        status: isDraft === false ? ContentStatus.PUBLISHED : ContentStatus.DRAFT,
+        publishedAt: isDraft === false ? new Date() : undefined,
         tags: tagIds
           ? { create: tagIds.map((tagId) => ({ tag: { connect: { id: tagId } } })) }
           : undefined,

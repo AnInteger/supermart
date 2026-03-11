@@ -40,7 +40,12 @@ export async function updateProfile(
 
   return {
     success: true,
-    data: user,
+    data: {
+      id: user.id,
+      name: user.name || '',
+      bio: user.bio,
+      avatar: user.avatar,
+    },
   };
 }
 
@@ -59,7 +64,7 @@ export async function updateAIConfig(
 
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { aiConfig: config },
+    data: { aiConfig: config as never },
   });
 
   return {

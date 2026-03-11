@@ -70,7 +70,7 @@ export async function register(
     data: {
       id: user.id,
       email: user.email,
-      name: user.name,
+      name: user.name || '',
     },
   };
 }
@@ -116,7 +116,13 @@ export async function getCurrentUser(): Promise<ApiResponse<CurrentUser>> {
   return {
     success: true,
     data: {
-      ...user,
+      id: user.id,
+      email: user.email,
+      name: user.name || '',
+      avatar: user.avatar,
+      bio: user.bio,
+      role: user.role,
+      createdAt: user.createdAt.toISOString(),
       stats: {
         contentsCount: user._count.contents,
         collectionsCount: user._count.collections,

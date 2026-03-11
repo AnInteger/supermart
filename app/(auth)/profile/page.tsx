@@ -47,8 +47,8 @@ export default async function ProfilePage() {
           <CardContent>
             <ProfileForm
               defaultValues={{
-                name: user.name,
-                bio: user.bio,
+                name: user.name || '',
+                bio: user.bio || '',
               }}
             />
           </CardContent>

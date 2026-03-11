@@ -93,15 +93,13 @@ export const createContentSchema = z.object({
   type: z.enum(['SKILL', 'AGENT']),
   name: z.string().min(3, '名称至少3个字符').max(100, '名称最多100个字符'),
   description: z.string().min(10, '描述至少10个字符').max(500, '描述最多500个字符'),
-  categoryId: z.string().cuid('请选择分类'),
+  categoryId: z.string().min(1, '请选择分类'),
 
-  instruction: z.string().max(10000).optional(),
+  content: z.string().max(50000, '内容最多50000个字符').optional().or(z.literal('')),
   toolsConfig: toolsConfigSchema.optional(),
-  setupGuide: z.string().max(10000).optional(),
-  examples: z.string().max(10000).optional(),
 
-  tagIds: z.array(z.string().cuid()).max(5, '最多5个标签').optional(),
-  fileIds: z.array(z.string().cuid()).max(10, '最多10个文件').optional(),
+  tagIds: z.array(z.string()).max(5, '最多5个标签').optional(),
+  fileIds: z.array(z.string()).max(10, '最多10个文件').optional(),
 
   isDraft: z.boolean().default(true),
 });
