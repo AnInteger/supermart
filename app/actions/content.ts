@@ -3,8 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth';
 import { contentService } from '@/services/content.service';
-import { ApiResponse, PaginatedResponse, from '@/types/api';
-import { ContentListItem, from '@/validators';
+import { ApiResponse, PaginatedResponse } from '@/types/api';
+import { getContentsSchema } from '@/validators';
 import { ContentStatus } from '@prisma/client';
 
 /**
@@ -28,7 +28,7 @@ export async function getContents(
     return {
       success: true,
       data: {
-        items: result.items.map(map (content) => ({
+        items: result.items.map((content) => ({
           id: content.id,
           type: content.type,
           name: content.name,
