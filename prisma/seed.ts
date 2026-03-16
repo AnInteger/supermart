@@ -1,4 +1,4 @@
-import { PrismaClient, ContentType, ContentStatus, UserRole } from '@prisma/client';
+import { PrismaClient, ContentStatus, UserRole } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { hash } from 'bcryptjs';
 
@@ -88,9 +88,9 @@ async function main() {
   // 内容1: 专业博客文章写作助手
   const content1 = await prisma.content.create({
     data: {
-      type: ContentType.SKILL,
       name: '专业博客文章写作助手',
       description: '帮助您快速生成高质量、SEO友好的博客文章。支持多种风格和主题，适合内容创作者和营销人员。',
+      version: 'v1.0.0',
       content: `# 专业博客文章写作助手
 
 你是一位专业的博客文章写作助手。请根据用户提供的主题，生成结构清晰、内容丰富的博客文章。
@@ -173,7 +173,6 @@ async function main() {
   // 内容2: 代码审查助手
   const content2 = await prisma.content.create({
     data: {
-      type: ContentType.SKILL,
       name: '代码审查助手',
       description: '自动审查代码，发现潜在问题，提供改进建议。支持多种编程语言。',
       content: `# 代码审查助手
@@ -253,71 +252,9 @@ def get_user(id):
     ],
   });
 
-  // 内容3: 数据分析智能体
+  // 内容3: 营销文案生成器
   const content3 = await prisma.content.create({
     data: {
-      type: ContentType.AGENT,
-      name: '数据分析智能体',
-      description: '自动分析数据集，生成可视化报告和洞察建议。',
-      content: `# 数据分析智能体
-
-你是一位数据分析专家。根据用户提供的数据，完成全面的数据分析任务。
-
-## When to Use This Agent
-
-- 需要快速了解数据集概况
-- 自动生成数据分析报告
-- 发现数据中的规律和异常
-- 获取业务洞察建议
-
-## 分析流程
-
-1. **数据概览**：行数、列数、数据类型
-2. **数据质量**：缺失值、异常值检测
-3. **统计分析**：描述性统计
-4. **可视化建议**：适合的图表类型
-5. **业务洞察**：关键发现和建议
-
-## How to Use
-
-### Step 1: 准备数据
-
-准备 CSV 或 Excel 数据文件，或者直接粘贴数据。
-
-### Step 2: 描述需求
-
-说明分析目标和关注点：
-\`\`\`
-分析这份销售数据，找出：
-1. 销售趋势
-2. 最佳/最差产品
-3. 异常值
-\`\`\`
-
-### Step 3: 解读结果
-
-根据分析结果制定业务决策。
-
-## Tips
-
-- 数据量建议在 1000 行以内
-- 明确分析目标可以获得更精准的洞察
-- 可以要求生成可视化代码（Python/Matplotlib）
-`,
-      categoryId: createdCategories[2].id, // 数据分析
-      authorId: user.id,
-      status: ContentStatus.PUBLISHED,
-      publishedAt: new Date(),
-      viewCount: 67,
-      avgRating: 4.2,
-      ratingCount: 5,
-    },
-  });
-
-  // 内容4: 营销文案生成器
-  const content4 = await prisma.content.create({
-    data: {
-      type: ContentType.SKILL,
       name: '营销文案生成器',
       description: '快速生成吸引人的营销文案，适用于社交媒体、广告、邮件等场景。',
       content: `# 营销文案生成器
@@ -395,15 +332,14 @@ def get_user(id):
 
   await prisma.contentTag.createMany({
     data: [
-      { contentId: content4.id, tagId: createdTags[0].id }, // ChatGPT
-      { contentId: content4.id, tagId: createdTags[4].id }, // 创意
+      { contentId: content3.id, tagId: createdTags[0].id }, // ChatGPT
+      { contentId: content3.id, tagId: createdTags[4].id }, // 创意
     ],
   });
 
-  // 内容5: 设计灵感生成
-  const content5 = await prisma.content.create({
+  // 内容4: 设计灵感生成
+  const content4 = await prisma.content.create({
     data: {
-      type: ContentType.SKILL,
       name: '设计灵感生成器',
       description: '为设计师提供创意灵感和设计方向建议。',
       content: `# 设计灵感生成器
@@ -459,7 +395,7 @@ def get_user(id):
     },
   });
 
-  console.log('✅ 创建了 5 条内容');
+  console.log('✅ 创建了 4 条内容');
 
   // 创建评论
   await prisma.comment.createMany({
@@ -475,7 +411,7 @@ def get_user(id):
         body: '感谢使用，欢迎提出改进建议！',
       },
       {
-        contentId: content4.id,
+        contentId: content3.id,
         userId: user.id,
         body: '营销文案生成效果很好，推荐！',
       },
@@ -490,7 +426,6 @@ def get_user(id):
       { contentId: content2.id, userId: user.id, score: 5 },
       { contentId: content3.id, userId: admin.id, score: 4 },
       { contentId: content4.id, userId: user.id, score: 5 },
-      { contentId: content5.id, userId: admin.id, score: 4 },
     ],
   });
   console.log('✅ 创建了评分');
@@ -499,7 +434,7 @@ def get_user(id):
   await prisma.collection.createMany({
     data: [
       { userId: user.id, contentId: content1.id },
-      { userId: user.id, contentId: content4.id },
+      { userId: user.id, contentId: content3.id },
       { userId: admin.id, contentId: content2.id },
     ],
   });

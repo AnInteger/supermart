@@ -127,19 +127,6 @@
 
 ---
 
-### TC-008: 未登录用户不能访问我的内容
-
-**前置条件**: 用户未登录
-
-**执行步骤**:
-1. 访问 http://localhost:3000/profile/contents
-2. 等待页面加载
-
-**预期结果**:
-- 页面自动重定向到登录页
-- URL 包含 "/login"
-
----
 
 ## 三、导航功能测试（需要登录）
 
@@ -188,18 +175,18 @@
 
 ---
 
-### TC-012: 我的内容页面应该正常显示
+### TC-012: 个人中心页面应该正常显示
 
 **前置条件**: 用户已登录
 
 **执行步骤**:
 1. 登录系统
-2. 访问 http://localhost:3000/profile/contents
+2. 访问 http://localhost:3000/profile
 3. 检查页面元素
 
 **预期结果**:
 - 页面显示 h1 标题
-- 显示"我的内容"相关内容
+- 显示"我的内容"和"个人资料"等内容
 
 ---
 
@@ -522,7 +509,7 @@ npx playwright show-report
 
 **执行步骤**:
 1. 登录系统
-2. 访问 http://localhost:3000/profile/contents
+2. 访问 http://localhost:3000/profile（我的内容标签页）
 3. 点击任意内容的"编辑"按钮
 4. 修改名称为"编辑后的名称"
 5. 修改描述内容
@@ -543,7 +530,7 @@ npx playwright show-report
 
 **执行步骤**:
 1. 登录系统
-2. 访问 http://localhost:3000/profile/contents
+2. 访问 http://localhost:3000/profile（我的内容标签页）
 3. 点击任意内容的"删除"按钮
 4. 确认删除操作
 5. 等待删除完成
@@ -650,8 +637,8 @@ npx playwright show-report
 
 **执行步骤**:
 1. 登录系统
-2. 访问 http://localhost:3000/profile/contents
-3. 切换到"我的收藏"标签或访问收藏页面
+2. 访问 http://localhost:3000/profile
+3. 切换到"我的收藏"标签
 4. 检查收藏列表
 
 **预期结果**:

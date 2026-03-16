@@ -48,11 +48,13 @@ export default async function EditPage({ params }: EditPageProps) {
           contentId={id}
           categories={categories}
           defaultValues={{
-            type: contentResult.data.type,
             name: contentResult.data.name,
             description: contentResult.data.description,
+            version: contentResult.data.version,
+            versionNotes: contentResult.data.versionNotes || undefined,
             categoryId: contentResult.data.category.id,
             content: contentResult.data.content || '',
+            license: contentResult.data.license,
           }}
         />
       </div>

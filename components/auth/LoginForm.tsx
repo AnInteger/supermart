@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/form';
 import { signIn } from 'next-auth/react';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 type LoginFormValues = {
   email: string;
@@ -45,8 +46,6 @@ export function LoginForm() {
         redirect: false,
       });
 
-      // NextAuth v5: 成功时 result 为 undefined 或没有 error
-      // 失败时 result.error 包含错误信息
       if (result?.error) {
         toast.error('登录失败', {
           description: '邮箱或密码错误',
@@ -54,9 +53,7 @@ export function LoginForm() {
         setIsLoading(false);
       } else {
         toast.success('登录成功');
-        // 先刷新 session，再跳转
         router.refresh();
-        // 等待一下让 session 更新
         await new Promise(resolve => setTimeout(resolve, 500));
         router.push('/');
       }
@@ -72,16 +69,22 @@ export function LoginForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-slate-800 mb-2">欢迎回来</h1>
+          <p className="text-slate-500 text-sm">登录你的账号继续探索</p>
+        </div>
+
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>邮箱</FormLabel>
+              <FormLabel className="text-slate-700">邮箱</FormLabel>
               <FormControl>
                 <Input
                   type="email"
                   placeholder="请输入邮箱"
+                  className="border-slate-300 focus:border-purple-500"
                   {...field}
                 />
               </FormControl>
@@ -95,11 +98,12 @@ export function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>密码</FormLabel>
+              <FormLabel className="text-slate-700">密码</FormLabel>
               <FormControl>
                 <Input
                   type="password"
                   placeholder="请输入密码"
+                  className="border-slate-300 focus:border-purple-500"
                   {...field}
                 />
               </FormControl>
@@ -108,8 +112,19 @@ export function LoginForm() {
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? '登录中...' : '登录'}
+        <Button
+          type="submit"
+          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:shadow-lg hover:shadow-purple-500/30 transition-all"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              登录中...
+            </>
+          ) : (
+            '登录'
+          )}
         </Button>
       </form>
     </Form>

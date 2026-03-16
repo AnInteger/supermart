@@ -13,10 +13,6 @@ describe('CONTENT_TYPES', () => {
   it('has SKILL type', () => {
     expect(CONTENT_TYPES.SKILL).toBe('SKILL');
   });
-
-  it('has AGENT type', () => {
-    expect(CONTENT_TYPES.AGENT).toBe('AGENT');
-  });
 });
 
 describe('CONTENT_STATUS', () => {

@@ -4,10 +4,9 @@
  */
 import { prisma } from '@/lib/prisma';
 import { redis, cache, invalidateCache } from '@/lib/redis';
-import { ContentStatus, ContentType, Prisma } from '@prisma/client';
+import { ContentStatus, Prisma } from '@prisma/client';
 
 export interface GetContentsParams {
-  type?: ContentType;
   categoryId?: string;
   tagId?: string;
   authorId?: string;
@@ -18,14 +17,16 @@ export interface GetContentsParams {
 }
 
 export interface CreateContentData {
-  type: ContentType;
   name: string;
   description: string;
+  version?: string;
+  versionNotes?: string;
   categoryId: string;
   content?: string;
   toolsConfig?: Prisma.InputJsonValue;
   tagIds?: string[];
   fileIds?: string[];
+  license?: string;
   isDraft?: boolean;
 }
 
@@ -37,7 +38,6 @@ export class ContentService {
    */
   async getList(params: GetContentsParams) {
     const {
-      type,
       categoryId,
       tagId,
       authorId,
@@ -55,7 +55,6 @@ export class ContentService {
       status: ContentStatus.PUBLISHED,
     }
 
-    if (type) where.type = type
     if (categoryId) where.categoryId = categoryId
     if (authorId) where.authorId = authorId
     if (tagId) {

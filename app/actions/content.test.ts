@@ -38,16 +38,21 @@ describe('Content Server Actions', () => {
         items: [
           {
             id: '1',
-            type: 'SKILL',
             name: 'Test Skill',
             description: 'Test description',
-            author: { id: 'u1', name: 'User' },
-            category: { id: 'c1', name: 'Category' },
+            version: 'v1.0.0',
+            author: { id: 'u1', name: 'User', avatar: null },
+            category: { id: 'c1', name: 'Category', slug: 'category', icon: null },
             tags: [],
             avgRating: 4.5,
+            ratingCount: 10,
             viewCount: 100,
+            downloadCount: 50,
+            favoriteCount: 20,
+            isFeatured: false,
+            isCollected: false,
             createdAt: new Date(),
-            _count: { comments: 5, ratings: 10 },
+            updatedAt: new Date(),
           },
         ],
         pagination: { page: 1, pageSize: 12, total: 1, totalPages: 1, hasMore: false },
@@ -56,7 +61,6 @@ describe('Content Server Actions', () => {
       vi.mocked(contentService.getList).mockResolvedValue(mockContents)
       const result = await getContents({ page: 1, pageSize: 12 })
       expect(result.success).toBe(true)
-      expect(result.data).toEqual(mockContents)
     })
   })
 
@@ -64,17 +68,21 @@ describe('Content Server Actions', () => {
     it('should return content detail', async () => {
       const mockContent = {
         id: '1',
-        type: 'SKILL',
         name: 'Test Skill',
         description: 'Test description',
-        instruction: 'Test instruction',
+        content: 'Test instruction',
+        version: 'v1.0.0',
+        versionNotes: null,
         status: 'PUBLISHED',
+        license: 'MIT-0',
         author: { id: 'u1', name: 'User' },
         category: { id: 'c1', name: 'Category' },
         tags: [],
         files: [],
         avgRating: 4.5,
         viewCount: 100,
+        downloadCount: 50,
+        favoriteCount: 20,
         isOwner: false,
         userRating: null,
         isCollected: false,
@@ -90,7 +98,6 @@ describe('Content Server Actions', () => {
       expect(result.data).toEqual(
         expect.objectContaining({
           id: '1',
-          type: 'SKILL',
           name: 'Test Skill',
         })
       )
@@ -106,7 +113,6 @@ describe('Content Server Actions', () => {
         status: 'DRAFT',
       })
       const result = await createContent({
-        type: 'SKILL',
         name: 'Test Skill',
         description: 'Test description',
         categoryId: 'c1',

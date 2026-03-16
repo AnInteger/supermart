@@ -30,9 +30,9 @@ export async function getContents(
       data: {
         items: result.items.map((content) => ({
           id: content.id,
-          type: content.type,
           name: content.name,
           description: content.description,
+          version: content.version,
           author: {
             id: content.author.id,
             name: content.author.name || '',
@@ -41,11 +41,13 @@ export async function getContents(
           category: content.category,
           tags: content.tags.map((t) => t.tag),
           avgRating: content.avgRating,
-          ratingCount: content._count.ratings,
+          ratingCount: content.ratingCount,
           viewCount: content.viewCount,
+          downloadCount: content.downloadCount,
+          favoriteCount: content.favoriteCount,
           isFeatured: content.isFeatured ?? false,
           createdAt: content.createdAt.toISOString(),
-          _count: content._count,
+          updatedAt: content.updatedAt.toISOString(),
         })),
         pagination: result.pagination,
       },
@@ -86,12 +88,14 @@ export async function getContent(id: string): Promise<ApiResponse<ContentDetail>
       success: true,
       data: {
         id: content.id,
-        type: content.type,
         name: content.name,
         description: content.description,
+        version: content.version,
+        versionNotes: content.versionNotes,
         content: content.content,
         toolsConfig: content.toolsConfig as ToolsConfig | null,
         status: content.status,
+        license: content.license,
         publishedAt: content.publishedAt?.toISOString() || null,
         updatedAt: content.updatedAt.toISOString(),
         author: {
@@ -103,11 +107,15 @@ export async function getContent(id: string): Promise<ApiResponse<ContentDetail>
         tags: content.tags.map((t) => t.tag),
         files: content.files.map((f) => ({
           ...f,
+          path: f.path,
+          fileContent: f.fileContent,
           createdAt: f.createdAt.toISOString(),
         })),
         avgRating: content.avgRating,
-        ratingCount: content._count.ratings,
+        ratingCount: content.ratingCount,
         viewCount: content.viewCount,
+        downloadCount: content.downloadCount,
+        favoriteCount: content.favoriteCount,
         isFeatured: content.isFeatured ?? false,
         isOwner: content.isOwner,
         createdAt: content.createdAt.toISOString(),
@@ -156,6 +164,7 @@ export async function createContent(
     };
     const content = await contentService.create(createData, session.user.id);
     revalidatePath('/explore');
+    revalidatePath('/', 'page'); // 清除首页缓存
     return {
       success: true,
       data: {
@@ -344,9 +353,9 @@ export async function getMyContents(
       data: {
         items: result.items.map((content) => ({
           id: content.id,
-          type: content.type,
           name: content.name,
           description: content.description,
+          version: content.version,
           author: {
             id: content.author.id,
             name: content.author.name || '',
@@ -355,12 +364,14 @@ export async function getMyContents(
           category: content.category,
           tags: content.tags.map((t) => t.tag),
           avgRating: content.avgRating,
-          ratingCount: content._count.ratings,
+          ratingCount: content.ratingCount,
           viewCount: content.viewCount,
+          downloadCount: content.downloadCount,
+          favoriteCount: content.favoriteCount,
           isFeatured: content.isFeatured ?? false,
           createdAt: content.createdAt.toISOString(),
+          updatedAt: content.updatedAt.toISOString(),
           status: content.status,
-          _count: content._count,
         })),
         pagination: result.pagination,
       },

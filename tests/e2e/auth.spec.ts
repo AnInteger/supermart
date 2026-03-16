@@ -83,11 +83,6 @@ test.describe('权限控制', () => {
     expect(page.url()).toContain('/login');
   });
 
-  test('未登录用户不能访问我的内容', async ({ page }) => {
-    await page.goto(`${BASE_URL}/profile/contents`);
-    await page.waitForURL(/\/login/);
-    expect(page.url()).toContain('/login');
-  });
 });
 
 test.describe('导航功能 - 需要登录', () => {
@@ -113,8 +108,8 @@ test.describe('导航功能 - 需要登录', () => {
     await expect(page.locator('h1')).toBeVisible({ timeout: 10000 });
   });
 
-  test('我的内容页面应该正常显示', async ({ page }) => {
-    await page.goto(`${BASE_URL}/profile/contents`);
+  test('个人中心页面应该正常显示', async ({ page }) => {
+    await page.goto(`${BASE_URL}/profile`);
     await expect(page.locator('h1')).toBeVisible({ timeout: 10000 });
   });
 });

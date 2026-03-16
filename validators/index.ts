@@ -57,7 +57,6 @@ export const loginSchema = z.object({
 
 /** 获取内容列表验证 */
 export const getContentsSchema = z.object({
-  type: z.enum(['SKILL', 'AGENT']).optional(),
   categoryId: z.string().cuid().optional(),
   tagId: z.string().cuid().optional(),
   authorId: z.string().cuid().optional(),
@@ -90,9 +89,10 @@ export const toolsConfigSchema = z.object({
 
 /** 创建内容验证 */
 export const createContentSchema = z.object({
-  type: z.enum(['SKILL', 'AGENT']),
   name: z.string().min(3, '名称至少3个字符').max(100, '名称最多100个字符'),
   description: z.string().min(10, '描述至少10个字符').max(500, '描述最多500个字符'),
+  version: z.string().max(20, '版本号最多20个字符').default('v1.0.0'),
+  versionNotes: z.string().max(1000, '版本说明最多1000个字符').optional(),
   categoryId: z.string().min(1, '请选择分类'),
 
   content: z.string().max(50000, '内容最多50000个字符').optional().or(z.literal('')),
@@ -100,6 +100,7 @@ export const createContentSchema = z.object({
 
   tagIds: z.array(z.string()).max(5, '最多5个标签').optional(),
   fileIds: z.array(z.string()).max(10, '最多10个文件').optional(),
+  license: z.string().max(50, '许可证最多50个字符').default('MIT-0'),
 
   isDraft: z.boolean().default(true),
 });
@@ -172,7 +173,6 @@ export const getMyCollectionsSchema = z.object({
 /** 搜索验证 */
 export const searchContentsSchema = z.object({
   query: z.string().min(1).max(100),
-  type: z.enum(['SKILL', 'AGENT']).optional(),
   categoryId: z.string().cuid().optional(),
   sort: z.enum(['relevance', 'latest', 'popular']).default('relevance'),
   page: z.coerce.number().int().min(1).default(1),

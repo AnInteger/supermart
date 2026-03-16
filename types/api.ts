@@ -93,7 +93,7 @@ export interface CurrentUser extends UserBase {
 // 内容类型
 // ============================================
 
-export type ContentType = 'SKILL' | 'AGENT';
+export type ContentType = 'SKILL';
 export type ContentStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 
 /**
@@ -122,9 +122,9 @@ export interface Tag {
  */
 export interface ContentListItem {
   id: string;
-  type: ContentType;
   name: string;
   description: string;
+  version: string;
   author: {
     id: string;
     name: string;
@@ -135,9 +135,12 @@ export interface ContentListItem {
   avgRating: number | null;
   ratingCount: number;
   viewCount: number;
+  downloadCount: number;
+  favoriteCount: number;
   isFeatured: boolean;
   isCollected?: boolean;  // 当前用户是否收藏
   createdAt: string;
+  updatedAt: string;
 }
 
 /**
@@ -162,10 +165,11 @@ export interface ToolsConfig {
  */
 export interface ContentDetail extends ContentListItem {
   content: string | null;
+  versionNotes: string | null;
   toolsConfig: ToolsConfig | null;
   status: ContentStatus;
+  license: string;
   publishedAt: string | null;
-  updatedAt: string;
   files: ContentFile[];
   isOwner: boolean;  // 当前用户是否是作者
 }
@@ -176,7 +180,8 @@ export interface ContentDetail extends ContentListItem {
 export interface ContentFile {
   id: string;
   filename: string;
-  url: string;
+  path: string;
+  fileContent?: string | null;
   type: string;
   size: number;
   createdAt: string;
@@ -230,7 +235,6 @@ export interface LoginInput {
 
 // --- 内容 ---
 export interface GetContentsInput {
-  type?: ContentType;
   categoryId?: string;
   tagId?: string;
   authorId?: string;
@@ -241,25 +245,30 @@ export interface GetContentsInput {
 }
 
 export interface CreateContentInput {
-  type: ContentType;
   name: string;
   description: string;
+  version?: string;
+  versionNotes?: string;
   categoryId: string;
   content?: string;
   toolsConfig?: ToolsConfig;
   tagIds?: string[];
   fileIds?: string[];
+  license?: string;
   isDraft?: boolean;
 }
 
 export interface UpdateContentInput {
   name?: string;
   description?: string;
+  version?: string;
+  versionNotes?: string;
   categoryId?: string;
   content?: string;
   toolsConfig?: ToolsConfig;
   tagIds?: string[];
   fileIds?: string[];
+  license?: string;
 }
 
 // --- 互动 ---
@@ -286,7 +295,6 @@ export interface ToggleCollectionInput {
 // --- 搜索 ---
 export interface SearchContentsInput {
   query: string;
-  type?: ContentType;
   categoryId?: string;
   sort?: 'relevance' | 'latest' | 'popular';
   page?: number;

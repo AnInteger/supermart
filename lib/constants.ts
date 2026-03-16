@@ -1,7 +1,6 @@
 // 内容类型
 export const CONTENT_TYPES = {
   SKILL: "SKILL",
-  AGENT: "AGENT",
 } as const;
 
 // 内容状态

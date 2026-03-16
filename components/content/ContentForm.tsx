@@ -42,7 +42,7 @@ type ContentFormValues = z.infer<typeof createContentSchema>;
 // 默认模板
 const DEFAULT_TEMPLATE = `# {{name}}
 
-简要描述这个 Skill/Agent 的功能和使用场景...
+简要描述这个 Skill 的功能和使用场景...
 
 ## When to Use This Skill
 
@@ -112,13 +112,14 @@ export function ContentForm({
   const form = useForm<ContentFormValues>({
     resolver: zodResolver(createContentSchema) as any,
     defaultValues: {
-      type: 'SKILL',
       name: '',
       description: '',
+      version: 'v1.0.0',
       categoryId: '',
       content: mode === 'create' ? DEFAULT_TEMPLATE : '',
       tagIds: [],
       fileIds: [],
+      license: 'MIT-0',
       isDraft: true,
       ...defaultValues,
     },
@@ -176,29 +177,21 @@ export function ContentForm({
             <CardTitle>基本信息</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>类型</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="选择类型" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="SKILL">Skill</SelectItem>
-                        <SelectItem value="AGENT">Agent</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>名称</FormLabel>
+                  <FormControl>
+                    <Input placeholder="给你的 Skill 起个名字" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="categoryId"
@@ -231,21 +224,21 @@ export function ContentForm({
                   </FormItem>
                 )}
               />
-            </div>
 
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>名称</FormLabel>
-                  <FormControl>
-                    <Input placeholder="给你的 Skill/Agent 起个名字" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="version"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>版本号</FormLabel>
+                    <FormControl>
+                      <Input placeholder="v1.0.0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
@@ -255,8 +248,26 @@ export function ContentForm({
                   <FormLabel>描述</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="简要描述这个 Skill/Agent 的功能和使用场景"
+                      placeholder="简要描述这个 Skill 的功能和使用场景"
                       rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="versionNotes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>版本说明（可选）</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="本次版本的更新内容..."
+                      rows={2}
                       {...field}
                     />
                   </FormControl>
@@ -274,7 +285,7 @@ export function ContentForm({
               <div>
                 <CardTitle>内容</CardTitle>
                 <FormDescription className="mt-1.5">
-                  编写完整的 Skill/Agent 文档，支持 Markdown 格式。建议包含：使用场景、安装步骤、示例代码、常见问题等
+                  编写完整的 Skill 文档，支持 Markdown 格式。建议包含：使用场景、安装步骤、示例代码、常见问题等
                 </FormDescription>
               </div>
               <Button

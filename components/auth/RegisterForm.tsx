@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { toast } from 'sonner';
-import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 
 type RegisterFormValues = {
   email: string;
@@ -46,7 +46,6 @@ export function RegisterForm() {
 
       if (!result.success) {
         if (result.details) {
-          // 处理字段错误
           Object.entries(result.details).forEach(([field, messages]) => {
             form.setError(field as keyof RegisterFormValues, {
               message: messages[0],
@@ -75,14 +74,23 @@ export function RegisterForm() {
     <div className="space-y-6">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-slate-800 mb-2">创建账号</h1>
+            <p className="text-slate-500 text-sm">加入我们，分享你的专业技能</p>
+          </div>
+
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>昵称</FormLabel>
+                <FormLabel className="text-slate-700">昵称</FormLabel>
                 <FormControl>
-                  <Input placeholder="请输入昵称" {...field} />
+                  <Input
+                    placeholder="请输入昵称"
+                    className="border-slate-300 focus:border-purple-500"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -94,11 +102,12 @@ export function RegisterForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>邮箱</FormLabel>
+                <FormLabel className="text-slate-700">邮箱</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
                     placeholder="请输入邮箱"
+                    className="border-slate-300 focus:border-purple-500"
                     {...field}
                   />
                 </FormControl>
@@ -112,11 +121,12 @@ export function RegisterForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>密码</FormLabel>
+                <FormLabel className="text-slate-700">密码</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
                     placeholder="至少8位，包含大小写字母和数字"
+                    className="border-slate-300 focus:border-purple-500"
                     {...field}
                   />
                 </FormControl>
@@ -125,18 +135,22 @@ export function RegisterForm() {
             )}
           />
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? '注册中...' : '注册'}
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:shadow-lg hover:shadow-purple-500/30 transition-all"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                注册中...
+              </>
+            ) : (
+              '注册'
+            )}
           </Button>
         </form>
       </Form>
-
-      <div className="text-center text-sm">
-        <span className="text-muted-foreground">已有账号？</span>
-        <Link href="/login" className="text-primary hover:underline ml-1">
-          立即登录
-        </Link>
-      </div>
     </div>
   );
 }
