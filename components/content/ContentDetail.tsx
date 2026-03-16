@@ -8,7 +8,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import {
   Download, Heart, Star, Eye, Calendar, Shield, ChevronRight,
-  ChevronDown, FileText, Folder, AlertCircle,
+  ChevronDown, FileText, Folder, AlertCircle, History, Plus,
 } from 'lucide-react';
 import { toggleCollection, rateContent } from '@/app/actions/interaction';
 import { toast } from 'sonner';
@@ -202,6 +202,35 @@ export function ContentDetail({ content }: ContentDetailProps) {
           <div className="bg-white rounded-2xl p-6 border border-slate-200/50">
             <CommentSection contentId={content.id} />
           </div>
+
+          {/* Author Actions - Only visible to author */}
+          {content.isOwner && (
+            <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl p-6 border border-purple-200/50">
+              <div className="flex items-start space-x-3 mb-4">
+                <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Plus className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg text-purple-900 mb-1">
+                    作者操作
+                  </h3>
+                  <p className="text-sm text-purple-700">
+                    您是此 Skill 的作者，可以发布新版本
+                  </p>
+                </div>
+              </div>
+              <Link
+                href={`/content/${content.id}/new-version`}
+                className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all"
+              >
+                <Plus className="w-5 h-5" />
+                <span>发布新版本</span>
+              </Link>
+              <p className="text-xs text-purple-600 mt-3 text-center">
+                已发布的 Skill 不可编辑，只能通过发布新版本来更新
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Sidebar */}

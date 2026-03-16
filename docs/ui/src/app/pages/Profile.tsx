@@ -1,8 +1,5 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { Link } from 'react-router';
 import {
   User,
   Mail,
@@ -17,80 +14,33 @@ import {
   Star,
   Plus,
 } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getMyContents } from '@/app/actions/content';
-import { getMyCollections } from '@/app/actions/interaction';
-import { signOut } from 'next-auth/react';
-import { useSession } from 'next-auth/react';
-import { ContentListItem } from '@/types/api';
-import { formatRelativeTime } from '@/lib/utils';
+import { mockSkills, CURRENT_USER_ID } from '../data/mockData';
 
-export default function ProfilePage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+export function Profile() {
   const [activeTab, setActiveTab] = useState<'uploaded' | 'favorites'>('uploaded');
-  const [uploadedSkills, setUploadedSkills] = useState<ContentListItem[]>([]);
-  const [favoriteSkills, setFavoriteSkills] = useState<ContentListItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const user = session?.user;
-
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    }
-  }, [status, router]);
-
-  useEffect(() => {
-    async function fetchData() {
-      if (!user) return;
-
-      setLoading(true);
-      try {
-        const [uploadedResult, favoritesResult] = await Promise.all([
-          getMyContents({ page: 1, pageSize: 100 }),
-          getMyCollections({ page: 1, pageSize: 100 }),
-        ]);
-
-        if (uploadedResult.success) {
-          setUploadedSkills(uploadedResult.data.items);
-        }
-        if (favoritesResult.success) {
-          setFavoriteSkills(favoritesResult.data.items);
-        }
-      } catch (error) {
-        console.error('Failed to fetch profile data:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [user]);
-
-  const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/' });
+  // Mock user data
+  const userData = {
+    name: '李明',
+    email: 'liming@example.com',
+    avatar:
+      'https://images.unsplash.com/photo-1581065178026-390bc4e78dad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBhc2lhbiUyMHdvbWFuJTIwcG9ydHJhaXR8ZW58MXx8fHwxNzczMzI0MTYzfDA&ixlib=rb-4.1.0&q=80&w=1080',
+    bio: '资深产品经理，专注于 B 端产品设计与用户体验优化。喜欢分享工作经验，帮助更多人提升效率。',
+    joinDate: '2024-01-15',
+    stats: {
+      uploaded: 3,
+      favorites: 12,
+      downloads: 456,
+      totalViews: 5432,
+    },
   };
 
-  if (status === 'loading' || loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-50 flex items-center justify-center">
-        <div className="text-slate-500">加载中...</div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
-  const userInitial = user.name?.charAt(0).toUpperCase() || 'U';
-  const stats = {
-    uploaded: uploadedSkills.length,
-    favorites: favoriteSkills.length,
-    downloads: uploadedSkills.reduce((sum, s) => sum + (s.downloadCount || 0), 0),
-    totalViews: uploadedSkills.reduce((sum, s) => sum + s.viewCount, 0),
-  };
+  const uploadedSkills = mockSkills.filter(
+    (skill) => skill.author.id === CURRENT_USER_ID
+  );
+  const favoriteSkills = mockSkills.filter(
+    (skill) => skill.favoritedBy?.includes(CURRENT_USER_ID)
+  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -101,53 +51,47 @@ export default function ProfilePage() {
             {/* Profile Header */}
             <div className="text-center mb-6">
               <div className="relative inline-block mb-4">
-                <Avatar className="w-24 h-24 mx-auto">
-                  <AvatarImage src={user.image || ''} alt={user.name || ''} />
-                  <AvatarFallback className="text-2xl bg-gradient-to-br from-purple-600 to-blue-600 text-white">
-                    {userInitial}
-                  </AvatarFallback>
-                </Avatar>
-                <Link
-                  href="/profile/edit"
-                  className="absolute bottom-0 right-0 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white hover:bg-purple-700 transition-colors"
-                >
+                <img
+                  src={userData.avatar}
+                  alt={userData.name}
+                  className="w-24 h-24 rounded-full mx-auto"
+                />
+                <button className="absolute bottom-0 right-0 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white hover:bg-purple-700 transition-colors">
                   <Edit2 className="w-4 h-4" />
-                </Link>
+                </button>
               </div>
               <h2 className="text-xl font-bold text-slate-800 mb-1">
-                {user.name}
+                {userData.name}
               </h2>
-              <p className="text-slate-500 text-sm mb-4">{user.email}</p>
-              {(user as any).bio && (
-                <p className="text-slate-600 text-sm leading-relaxed">
-                  {(user as any).bio}
-                </p>
-              )}
+              <p className="text-slate-500 text-sm mb-4">{userData.email}</p>
+              <p className="text-slate-600 text-sm leading-relaxed">
+                {userData.bio}
+              </p>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3 mb-6 pb-6 border-b border-slate-100">
               <div className="bg-purple-50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-purple-600 mb-1">
-                  {stats.uploaded}
+                  {userData.stats.uploaded}
                 </div>
                 <div className="text-xs text-slate-600">上传的 Skill</div>
               </div>
               <div className="bg-pink-50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-pink-600 mb-1">
-                  {stats.favorites}
+                  {userData.stats.favorites}
                 </div>
                 <div className="text-xs text-slate-600">收藏的 Skill</div>
               </div>
               <div className="bg-blue-50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-blue-600 mb-1">
-                  {stats.downloads}
+                  {userData.stats.downloads}
                 </div>
                 <div className="text-xs text-slate-600">总下载量</div>
               </div>
               <div className="bg-green-50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-green-600 mb-1">
-                  {stats.totalViews.toLocaleString()}
+                  {userData.stats.totalViews.toLocaleString()}
                 </div>
                 <div className="text-xs text-slate-600">总浏览量</div>
               </div>
@@ -157,27 +101,21 @@ export default function ProfilePage() {
             <div className="space-y-3 mb-6 pb-6 border-b border-slate-100">
               <div className="flex items-center space-x-3 text-sm text-slate-600">
                 <Mail className="w-4 h-4" />
-                <span>{user.email}</span>
+                <span>{userData.email}</span>
               </div>
               <div className="flex items-center space-x-3 text-sm text-slate-600">
                 <Calendar className="w-4 h-4" />
-                <span>加入于 {formatRelativeTime(new Date())}</span>
+                <span>加入于 {userData.joinDate}</span>
               </div>
             </div>
 
             {/* Actions */}
             <div className="space-y-2">
-              <Link
-                href="/profile/settings"
-                className="w-full flex items-center space-x-3 px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-slate-700"
-              >
+              <button className="w-full flex items-center space-x-3 px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-slate-700">
                 <Settings className="w-4 h-4" />
                 <span className="text-sm">账户设置</span>
-              </Link>
-              <button
-                onClick={handleSignOut}
-                className="w-full flex items-center space-x-3 px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-slate-700"
-              >
+              </button>
+              <button className="w-full flex items-center space-x-3 px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-slate-700">
                 <LogOut className="w-4 h-4" />
                 <span className="text-sm">退出登录</span>
               </button>
@@ -192,23 +130,25 @@ export default function ProfilePage() {
             <div className="flex border-b border-slate-200">
               <button
                 onClick={() => setActiveTab('uploaded')}
-                className={`flex-1 flex items-center justify-center space-x-2 px-6 py-4 font-medium transition-colors ${activeTab === 'uploaded'
+                className={`flex-1 flex items-center justify-center space-x-2 px-6 py-4 font-medium transition-colors ${
+                  activeTab === 'uploaded'
                     ? 'text-purple-600 border-b-2 border-purple-600'
                     : 'text-slate-600 hover:text-slate-800'
-                  }`}
+                }`}
               >
                 <Upload className="w-4 h-4" />
-                <span>我上传的 ({stats.uploaded})</span>
+                <span>我上传的 ({userData.stats.uploaded})</span>
               </button>
               <button
                 onClick={() => setActiveTab('favorites')}
-                className={`flex-1 flex items-center justify-center space-x-2 px-6 py-4 font-medium transition-colors ${activeTab === 'favorites'
+                className={`flex-1 flex items-center justify-center space-x-2 px-6 py-4 font-medium transition-colors ${
+                  activeTab === 'favorites'
                     ? 'text-purple-600 border-b-2 border-purple-600'
                     : 'text-slate-600 hover:text-slate-800'
-                  }`}
+                }`}
               >
                 <Heart className="w-4 h-4" />
-                <span>我的收藏 ({stats.favorites})</span>
+                <span>我的收藏 ({userData.stats.favorites})</span>
               </button>
             </div>
           </div>
@@ -226,34 +166,36 @@ export default function ProfilePage() {
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <Link
-                            href={`/content/${skill.id}`}
+                            to={`/skill/${skill.id}`}
                             className="text-lg font-semibold text-slate-800 hover:text-purple-600 transition-colors"
                           >
                             {skill.name}
                           </Link>
                           <div className="flex items-center space-x-2 mt-2">
                             <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded">
-                              {skill.category.icon} {skill.category.name}
+                              {skill.category === 'content' && '创作运营'}
+                              {skill.category === 'development' && '代码开发'}
+                              {skill.category === 'design' && '平面设计'}
                             </span>
                             <span className="text-xs text-slate-500">
                               {skill.version}
                             </span>
                             <span className="text-xs text-slate-400">•</span>
                             <span className="text-xs text-slate-500">
-                              {formatRelativeTime(skill.updatedAt)}
+                              {skill.updatedAt}
                             </span>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Link
-                            href={`/content/${skill.id}/new-version`}
+                            to={`/skill/${skill.id}/new-version`}
                             className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all text-sm flex items-center space-x-1"
                           >
                             <Plus className="w-4 h-4" />
                             <span>新版本</span>
                           </Link>
                           <Link
-                            href={`/content/${skill.id}`}
+                            to={`/skill/${skill.id}`}
                             className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm transition-colors"
                           >
                             查看
@@ -270,28 +212,26 @@ export default function ProfilePage() {
                         <div className="flex items-center space-x-4 text-xs text-slate-500">
                           <div className="flex items-center space-x-1">
                             <Eye className="w-3.5 h-3.5" />
-                            <span>{skill.viewCount.toLocaleString()}</span>
+                            <span>{skill.stats.views.toLocaleString()}</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <Download className="w-3.5 h-3.5" />
-                            <span>{(skill.downloadCount || 0).toLocaleString()}</span>
+                            <span>{skill.stats.downloads.toLocaleString()}</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <Heart className="w-3.5 h-3.5" />
-                            <span>{(skill.favoriteCount || 0).toLocaleString()}</span>
+                            <span>{skill.stats.favorites.toLocaleString()}</span>
                           </div>
                         </div>
-                        {skill.avgRating && (
-                          <div className="flex items-center space-x-1">
-                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-sm font-semibold text-slate-700">
-                              {skill.avgRating.toFixed(1)}
-                            </span>
-                            <span className="text-xs text-slate-500">
-                              ({skill.ratingCount || 0})
-                            </span>
-                          </div>
-                        )}
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          <span className="text-sm font-semibold text-slate-700">
+                            {skill.stats.rating}
+                          </span>
+                          <span className="text-xs text-slate-500">
+                            ({skill.stats.ratingCount})
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))
@@ -307,7 +247,7 @@ export default function ProfilePage() {
                       分享你的专业经验，让更多人受益
                     </p>
                     <Link
-                      href="/create"
+                      to="/upload"
                       className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all"
                     >
                       <Upload className="w-4 h-4" />
@@ -329,14 +269,16 @@ export default function ProfilePage() {
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <Link
-                            href={`/content/${skill.id}`}
+                            to={`/skill/${skill.id}`}
                             className="text-lg font-semibold text-slate-800 hover:text-purple-600 transition-colors"
                           >
                             {skill.name}
                           </Link>
                           <div className="flex items-center space-x-2 mt-2">
                             <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded">
-                              {skill.category.icon} {skill.category.name}
+                              {skill.category === 'content' && '创作运营'}
+                              {skill.category === 'development' && '代码开发'}
+                              {skill.category === 'design' && '平面设计'}
                             </span>
                             <span className="text-xs text-slate-500">
                               {skill.version}
@@ -354,12 +296,11 @@ export default function ProfilePage() {
 
                       {/* Author */}
                       <div className="flex items-center space-x-2 mb-4">
-                        <Avatar className="w-6 h-6">
-                          <AvatarImage src={skill.author.avatar || ''} alt={skill.author.name || ''} />
-                          <AvatarFallback className="text-[10px]">
-                            {skill.author.name?.charAt(0).toUpperCase() || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
+                        <img
+                          src={skill.author.avatar}
+                          alt={skill.author.name}
+                          className="w-6 h-6 rounded-full"
+                        />
                         <span className="text-sm text-slate-600">
                           {skill.author.name}
                         </span>
@@ -370,25 +311,23 @@ export default function ProfilePage() {
                         <div className="flex items-center space-x-4 text-xs text-slate-500">
                           <div className="flex items-center space-x-1">
                             <Eye className="w-3.5 h-3.5" />
-                            <span>{skill.viewCount.toLocaleString()}</span>
+                            <span>{skill.stats.views.toLocaleString()}</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <Download className="w-3.5 h-3.5" />
-                            <span>{(skill.downloadCount || 0).toLocaleString()}</span>
+                            <span>{skill.stats.downloads.toLocaleString()}</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <Heart className="w-3.5 h-3.5" />
-                            <span>{(skill.favoriteCount || 0).toLocaleString()}</span>
+                            <span>{skill.stats.favorites.toLocaleString()}</span>
                           </div>
                         </div>
-                        {skill.avgRating && (
-                          <div className="flex items-center space-x-1">
-                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-sm font-semibold text-slate-700">
-                              {skill.avgRating.toFixed(1)}
-                            </span>
-                          </div>
-                        )}
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          <span className="text-sm font-semibold text-slate-700">
+                            {skill.stats.rating}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))
@@ -404,7 +343,7 @@ export default function ProfilePage() {
                       发现喜欢的 Skill 并收藏起来吧
                     </p>
                     <Link
-                      href="/"
+                      to="/"
                       className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all"
                     >
                       <span>浏览 Skill</span>

@@ -88,33 +88,38 @@ model Category {
 
 /// 内容表 - 存储 Skill
 model Content {
-  id            String        @id @default(cuid())
-  name          String
-  description   String
-  authorId      String
-  toolsConfig   Json?
-  categoryId    String
-  status        ContentStatus @default(DRAFT)
-  isFeatured    Boolean       @default(false)
-  viewCount     Int           @default(0)
-  downloadCount Int           @default(0)
-  avgRating     Float?
-  ratingCount   Int           @default(0)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  publishedAt   DateTime?
-  content       String?
-  favoriteCount Int           @default(0)
-  license       String        @default("MIT-0")
-  version       String        @default("v1.0.0")
-  versionNotes  String?
-  collections   Collection[]
-  comments      Comment[]
-  tags          ContentTag[]
-  author        User          @relation(fields: [authorId], references: [id])
-  category      Category      @relation(fields: [categoryId], references: [id])
-  files         File[]
-  ratings       Rating[]
+  id              String        @id @default(cuid())
+  name            String
+  description     String
+  authorId        String
+  toolsConfig     Json?
+  categoryId      String
+  status          ContentStatus @default(DRAFT)
+  isFeatured      Boolean       @default(false)
+  viewCount       Int           @default(0)
+  downloadCount   Int           @default(0)
+  avgRating       Float?
+  ratingCount     Int           @default(0)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  publishedAt     DateTime?
+  content         String?
+  favoriteCount   Int           @default(0)
+  license         String        @default("MIT-0")
+  version         String        @default("v1.0.0")
+  versionNotes    String?
+  // 版本关联：新版本指向原始 Skill
+  parentContentId String?
+  collections     Collection[]
+  comments        Comment[]
+  tags            ContentTag[]
+  author          User          @relation(fields: [authorId], references: [id])
+  category        Category      @relation(fields: [categoryId], references: [id])
+  files           File[]
+  ratings         Rating[]
+  // 版本历史关联
+  parentContent   Content?      @relation("SkillVersions", fields: [parentContentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  versions        Content[]    @relation("SkillVersions")
 
   @@index([status])
   @@index([categoryId])
@@ -122,6 +127,7 @@ model Content {
   @@index([createdAt(sort: Desc)])
   @@index([viewCount(sort: Desc)])
   @@index([avgRating(sort: Desc)])
+  @@index([parentContentId])
   @@map("contents")
 }
 

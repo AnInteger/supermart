@@ -279,6 +279,168 @@ export async function uploadZipAndCreateContent(
 }
 
 /**
+ * 发布新版本
+ */
+export async function publishNewVersion(
+  parentContentId: string,
+  formData: FormData
+): Promise<ApiResponse<UploadZipResult>> {
+  console.log('=== publishNewVersion started ===');
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: '请先登录', code: 'UNAUTHORIZED' };
+  }
+
+  const file = formData.get('file') as File | null;
+  const version = formData.get('version') as string | null;
+  const versionNotes = formData.get('versionNotes') as string | null;
+  const description = formData.get('description') as string | null;
+
+  console.log('Form data:', { parentContentId, version, versionNotes, hasFile: !!file });
+
+  // 获取原始 Skill
+  const parentContent = await prisma.content.findUnique({
+    where: { id: parentContentId },
+    include: { files: true },
+  });
+
+  if (!parentContent) {
+    return { success: false, error: '原始 Skill 不存在', code: 'NOT_FOUND' };
+  }
+
+  // 验证权限
+  if (parentContent.authorId !== session.user.id) {
+    return { success: false, error: '只有作者可以发布新版本', code: 'FORBIDDEN' };
+  }
+
+  if (!file) {
+    return { success: false, error: '请上传文件', code: 'VALIDATION_ERROR' };
+  }
+
+  if (!version) {
+    return { success: false, error: '请填写版本号', code: 'VALIDATION_ERROR' };
+  }
+
+  if (!file.name.toLowerCase().endsWith('.zip')) {
+    return { success: false, error: '只支持 ZIP 格式文件', code: 'VALIDATION_ERROR' };
+  }
+
+  // 检查版本号是否重复
+  const existingVersions = await prisma.content.findMany({
+    where: {
+    OR: [
+      { id: parentContentId },
+      { parentContentId: parentContentId },
+    ],
+    },
+    });
+
+  const versionExists = existingVersions.some(c => c.version === version);
+  if (versionExists) {
+    return { success: false, error: '版本号已存在，请使用不同的版本号', code: 'VALIDATION_ERROR' };
+  }
+
+  try {
+    console.log('Reading zip file for new version...');
+    const buffer = await file.arrayBuffer();
+    const zip = await JSZip.loadAsync(buffer);
+
+    // 解析文件结构
+    const filesData: Array<{
+      filename: string;
+      path: string;
+      fileContent: string | null;
+      type: string;
+      size: number;
+    }> = [];
+
+    for (const [path, zipEntry] of Object.entries(zip.files)) {
+      if (zipEntry.dir || shouldSkipFile(path)) {
+        continue;
+      }
+
+      const filename = path.split('/').pop() || path;
+      const mimeType = getMimeType(filename);
+
+      let size = 0;
+      let fileContent: string | null = null;
+
+      try {
+        const content = await zipEntry.async('uint8array');
+        size = content.length;
+
+        if (isTextFile(filename, mimeType) && size < 100000) {
+          fileContent = await zipEntry.async('string');
+        }
+      } catch {
+        continue;
+      }
+
+      filesData.push({
+        filename,
+        path,
+        fileContent,
+        type: mimeType,
+        size,
+      });
+    }
+
+    if (filesData.length === 0) {
+      return { success: false, error: 'ZIP 文件中没有有效的文件', code: 'VALIDATION_ERROR' };
+    }
+
+    // 创建新版本
+    const newContent = await prisma.content.create({
+      data: {
+        name: parentContent.name,
+        description: description || parentContent.description,
+        categoryId: parentContent.categoryId,
+        version,
+        versionNotes: versionNotes || null,
+        license: parentContent.license,
+        authorId: session.user.id,
+        status: 'PUBLISHED',
+        publishedAt: new Date(),
+        parentContentId: parentContent.id, // 关联到原始 Skill
+        files: {
+          create: filesData.map(f => ({
+            filename: f.filename,
+            path: f.path,
+            fileContent: f.fileContent,
+            type: f.type,
+            size: f.size,
+          })),
+        },
+      },
+      include: {
+        files: true,
+      },
+    });
+
+    console.log('New version created successfully:', newContent.id);
+
+    return {
+      success: true,
+      data: {
+        contentId: newContent.id,
+        files: newContent.files.map(f => ({
+          id: f.id,
+          filename: f.filename,
+          path: f.path,
+          size: f.size,
+          type: f.type,
+        })),
+      },
+    };
+  } catch (error) {
+    console.error('Publish new version error:', error);
+    const errorMessage = error instanceof Error ? error.message : '发布新版本失败';
+    return { success: false, error: errorMessage, code: 'INTERNAL_ERROR' };
+  }
+}
+
+/**
  * 获取文件内容（用于预览）
  */
 export async function getFileContent(fileId: string): Promise<ApiResponse<{ content: string; filename: string }>> {
